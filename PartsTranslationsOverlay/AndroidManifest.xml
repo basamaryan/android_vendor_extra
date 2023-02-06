@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) 2022 The LineageOS Project
+     Copyright (C) 2023 The LineageOS Project
 
      SPDX-License-Identifier: Apache-2.0
 -->
@@ -8,5 +8,5 @@
     package="org.lineageos.overlay.popupcamera.translations"
     android:versionCode="1"
     android:versionName="1.0">
-    <overlay android:targetPackage="org.lineageos.popupcamera" android:priority="0" android:isStatic="true" />
+    <overlay android:targetPackage="org.lineageos.settings" android:priority="0" android:isStatic="true" />
 </manifest>

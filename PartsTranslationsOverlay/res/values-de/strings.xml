@@ -16,7 +16,7 @@
 -->
 <resources>
     <!-- Ambient settings -->
-    <string name="ambient_enable">Use ambient display</string>
+    <string name="ambient_enable">Inaktivitätsdisplay verwenden</string>
 
     <string name="doze_brightness_title">Helligkeit des Always-On Displays</string>
     <string name="doze_brightness_summary">%s Modus ist Aktiviert</string>
@@ -76,7 +76,7 @@
     <string name="music_headset_scenario_vocal">Stimme</string>
 
     <!-- QS tile title -->
-    <string name="dirac_qs_tile_title">Mi Sound Enhancer</string>
+    <string name="dirac_qs_tile_title">Mi Klangverbesserung</string>
 
     <!-- Thermal Profiles -->
     <string name="thermal_title">Optimierungsprofile</string>
@@ -95,10 +95,10 @@
     <string name="clear_speaker_description">Führen Sie diese Funktion ein- oder zweimal aus, wenn Sie feststellen, dass Ihr Lautsprecher leicht durch Staub blockiert ist. Stellen Sie die Medienlautstärke auf Maximum ein.\n\nWenn der Lautsprecher stark blockiert ist, führen Sie diese Funktion 2-5 Mal aus, während Sie Ihr Gerät mit dem Lautsprecher nach unten schütteln.</string>
 
     <!-- Haptic Level Settings -->
-    <string name="haptic_title">Haptic feedback</string>
-    <string name="haptic_warning">Setting-up haptic level too high may cause permanent hardware damage, use at your own risk</string>
-    <string name="haptic_summary">Customize vibration intensity</string>
-    <string name="haptic_level_title">Level</string>
-    <string name="haptic_level_summary">Amount of vibration intensity</string>
-    <string name="haptic_level_summary_incompatible">Feature not supported</string>
+    <string name="haptic_title">Haptisches Feedback</string>
+    <string name="haptic_warning">Eine zu hohe Einstellung des haptischen Feedbacks kann zu dauerhaften Hardwareschäden führen, Verwendung auf eigene Gefahr</string>
+    <string name="haptic_summary">Vibrationsintensität anpassen</string>
+    <string name="haptic_level_title">Stärke</string>
+    <string name="haptic_level_summary">Vibrationsintensität</string>
+    <string name="haptic_level_summary_incompatible">Funktion nicht unterstützt</string>
 </resources>

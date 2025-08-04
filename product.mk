@@ -11,6 +11,10 @@ ifeq ($(WITH_GMS),true)
 # Google Sans
 $(call inherit-product-if-exists, vendor/google_sans/product.mk)
 
+# Overlay
+PRODUCT_PACKAGES += \
+    SettingsOverlayCustom
+
 # Pixel Clocks
 $(call inherit-product-if-exists, vendor/pixel_clocks/product.mk)
 endif

@@ -13,5 +13,7 @@ ifeq ($(WITH_GMS),true)
 # Pixel Clocks
 -include vendor/pixel_clocks/board.mk
 
-BOARD_SYSTEMIMAGE_PARTITION_RESERVED_SIZE := 52428800
+  ifeq ($(PRODUCT_DEVICE),sweet)
+    BOARD_SYSTEMIMAGE_PARTITION_RESERVED_SIZE := 52428800
+  endif
 endif

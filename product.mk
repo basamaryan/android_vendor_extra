@@ -16,6 +16,10 @@ ifeq ($(WITH_GMS),true)
 # Google Sans
 $(call inherit-product-if-exists, vendor/google_sans/product.mk)
 
+# OTA
+PRODUCT_PACKAGES += \
+    UpdaterOverlay
+
 # Overlay
 PRODUCT_PACKAGES += \
     SettingsOverlayCustom

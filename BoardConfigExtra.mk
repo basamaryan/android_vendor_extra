@@ -13,7 +13,7 @@ ifeq ($(WITH_GMS),true)
 # Pixel Clocks
 -include vendor/pixel_clocks/board.mk
 
-  ifeq ($(PRODUCT_DEVICE),sweet)
+  ifneq (,$(filter lineage_sweet lineage_davinci,$(TARGET_PRODUCT)))
     BOARD_SYSTEMIMAGE_PARTITION_RESERVED_SIZE := 52428800
   endif
 endif

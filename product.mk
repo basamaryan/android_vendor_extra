@@ -13,9 +13,6 @@ ifeq ($(TARGET_PRODUCT),lineage_martini)
 endif
 
 ifeq ($(WITH_GMS),true)
-# Google Sans
-$(call inherit-product-if-exists, vendor/google_sans/product.mk)
-
 # OTA
 PRODUCT_PACKAGES += \
     UpdaterOverlay
@@ -24,6 +21,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     SettingsOverlayCustom
 
-# Pixel Clocks
-$(call inherit-product-if-exists, vendor/pixel_clocks/product.mk)
+# Pixel Goodies
+$(call inherit-product-if-exists, device/google/pixel-goodies/product.mk)
 endif

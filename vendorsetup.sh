@@ -12,6 +12,7 @@ apply_patches() {
 
     ./vendor/lineage/build/tools/repopick.py -p -t md3e-flags
     ./vendor/lineage/build/tools/repopick.py -p -t oplus-camera -f
+    ./vendor/lineage/build/tools/repopick.py -p 458893
 }
 
 # Release function supports martini, sweet, davinci

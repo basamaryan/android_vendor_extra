@@ -1,187 +1,259 @@
-# Always build GMS variant
+#!/bin/bash
+
 export WITH_GMS=true
 export GMS_MAKEFILE=gms.mk
 export TARGET_UNOFFICIAL_BUILD_ID=GMS
 
-apply_patches() {
-    local top="${ANDROID_BUILD_TOP:-$PWD}"
-    cd "$top" || return 1
+SF_USER="aryannn999"
+SF_HOST="frs.sourceforge.net"
+SF_PROJECT_ROOT="/home/frs/project/noprincesshere"
 
-    # Keep tree updated before picks
-    repo sync --force-sync -d -j18 || return 1
-
-    ./vendor/lineage/build/tools/repopick.py -p -t md3e-flags
-    ./vendor/lineage/build/tools/repopick.py -p -t oplus-camera -f
-    ./vendor/lineage/build/tools/repopick.py -p 458893
+convertsecs() {
+    ((h=${1}/3600))
+    ((m=(${1}%3600)/60))
+    ((s=${1}%60))
+    printf "%02d:%02d:%02d\n" $h $m $s
 }
 
-# Release function supports martini, sweet, davinci
-release() {
-    local device="${1:?usage: release <device>}"
-    case "$device" in
-        martini|sweet|davinci) ;;
-        *) echo "[ERROR] Unsupported device: $device. Use martini, sweet, or davinci."; return 1 ;;
+get_device_name() {
+    case "$1" in
+        "martini") echo "OnePlus 9RT" ;;
+        "sweet")   echo "Xiaomi Redmi Note 10 Pro / Redmi Note 10 Pro Max" ;;
+        "kiev")    echo "Motorola moto g 5G / moto one 5G ace" ;;
+        "davinci") echo "Xiaomi Redmi K20 / Mi 9T" ;;
+        *)         echo "$1" ;; 
     esac
-
-    local top="${ANDROID_BUILD_TOP:?ANDROID_BUILD_TOP not set}"
-
-    echo "[INFO] Starting release for $device"
-
-    # Clean only this device product dir
-    rm -rf "out/target/product/${device}"
-
-    # Picks and build
-    apply_patches || return 1
-    breakfast "$device" || return 1
-    m bacon -j14 || return 1
-
-    # OUT is set by the build system after breakfast/lunch
-    local out="${OUT:?OUT not set}"
-    local build_props="${out}/system/build.prop"
-
-    # Locate ROM zip based on build.prop, fallback to latest lineage-*.zip
-    local filename ver_line
-    if [[ -f "$build_props" ]]; then
-        ver_line="$(sed -n 's/^ro\.lineage\.version=//p' "$build_props")"
-        if [[ -n "$ver_line" ]]; then
-            filename="lineage-${ver_line}.zip"
-        fi
-    fi
-    if [[ -z "$filename" || ! -f "${out}/${filename}" ]]; then
-        filename="$(cd "$out" && ls -1t lineage-*.zip 2>/dev/null | head -n1)"
-        [[ -n "$filename" ]] || { echo "[ERROR] Could not find lineage zip in $out"; return 1; }
-    fi
-
-    # Extract first 8 digits from the filename and convert YYYYMMDD -> MMDDYYYY (folder name only)
-    local raw_date tag_name
-    raw_date="$(printf '%s\n' "$filename" | grep -oE '[0-9]{8}' | head -n1)"
-    if [[ "$raw_date" =~ ^[0-9]{8}$ ]]; then
-        tag_name="${raw_date:4:2}${raw_date:6:2}${raw_date:0:4}"
-    else
-        tag_name="$(date +%m%d%Y)"
-    fi
-
-    # Ensure sha256sum exists
-    [[ -f "${out}/${filename}.sha256sum" ]] || (cd "$out" && sha256sum "$filename" > "${filename}.sha256sum")
-
-    # Pull fields without PCRE lookbehind
-    local id romtype version datetime size
-    id="$(awk '{print $1}' "${out}/${filename}.sha256sum")"
-    romtype="$(sed -n 's/^ro\.lineage\.releasetype=//p' "$build_props")"; romtype="${romtype:-UNOFFICIAL}"
-    version="$(sed -n 's/^ro\.lineage\.build\.version=//p' "$build_props")"; version="${version:-23.0}"
-    datetime="$(sed -n 's/^ro\.build\.date\.utc=//p' "$build_props")"; datetime="${datetime:-$(date -u +%s)}"
-    size="$(stat -c%s "${out}/${filename}")"
-
-    # Build download URL for SourceForge with MMDDYYYY folder
-    local release_url="https://sourceforge.net/projects/noprincesshere/files/lineage-23.0/${device}/${tag_name}/$(basename "${filename}")/download"
-
-    # Check jq
-    if ! command -v jq >/dev/null 2>&1; then
-        echo "[ERROR] jq is required. Install with: sudo pacman -Syu jq"
-        return 1
-    fi
-
-    # OTA JSON via jq
-    local ota_entry
-    ota_entry="$(
-        jq -n \
-           --arg datetime "$datetime" \
-           --arg filename "$filename" \
-           --arg id "$id" \
-           --arg romtype "$romtype" \
-           --argjson size "$size" \
-           --arg version "$version" \
-           --arg release_url "$release_url" \
-           '{
-              response: [
-                {
-                  datetime: $datetime,
-                  filename: $filename,
-                  id: $id,
-                  romtype: $romtype,
-                  size: $size,
-                  url: $release_url,
-                  version: $version
-                }
-              ]
-            }'
-    )"
-
-    echo "[INFO] Updating local OTA repo JSON on master"
-    (
-        cd "${top}/ota" || exit 1
-        local device_json="${device}.json"
-        git checkout master || exit 1
-        git pull --rebase origin master || true
-        printf "%s\n" "$ota_entry" | tee "$device_json" >/dev/null
-        if ! git diff --quiet -- "$device_json"; then
-            git add "$device_json"
-            git commit -m "${device}: OTA update ${tag_name}"
-            git push origin master
-            echo "[INFO] Pushed ${device_json} to master"
-        else
-            echo "[INFO] No changes in ${device_json}, skipping commit"
-        fi
-    ) || return 1
-
-    # SourceForge upload
-    local sf_user="aryannn999"
-    local remote_base="/home/frs/project/noprincesshere/lineage-23.0/${device}/${tag_name}"
-
-    # Create only the deepest folder, ignore error if exists
-    { echo "mkdir ${remote_base}"; } | sftp "${sf_user}@frs.sourceforge.net" >/dev/null 2>&1 || true
-
-    rsync -Ph "${out}/${filename}"           "${sf_user}@frs.sourceforge.net:${remote_base}/"
-    rsync -Ph "${out}/${filename}.sha256sum" "${sf_user}@frs.sourceforge.net:${remote_base}/"
-
-    # Extra images per device
-    declare -a images
-    if [[ "$device" == "martini" ]]; then
-        images=( "boot.img" "dtbo.img" "vbmeta.img" "vendor_boot.img" )
-    else
-        images=( "boot.img" )
-    fi
-
-    for img in "${images[@]}"; do
-        if [[ -f "${out}/${img}" ]]; then
-            rsync -Ph "${out}/${img}" "${sf_user}@frs.sourceforge.net:${remote_base}/"
-            echo "[INFO] Uploaded ${img}"
-        else
-            echo "[WARN] ${img} not found in ${out} for ${device}"
-        fi
-    done
-
-    echo "[INFO] Release finished for ${device} at ${release_url}"
 }
 
-# Build and publish multiple devices sequentially.
-# Frees out/target/product/<device> after each successful release to save space.
-release_multiple() {
-    if [[ $# -lt 1 ]]; then
-        echo "usage: release_multiple <device> [<device> ...]"
-        echo "       devices: martini sweet davinci"
+telegram_notify() {
+    local message="$1"
+    if [[ -n "${TELEGRAM_TOKEN}" && -n "${TELEGRAM_CHAT}" ]]; then
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT}" \
+            -d text="${message}" \
+            -d parse_mode="Markdown" \
+            -d disable_web_page_preview="true" > /dev/null
+    else
+        echo "[WARN] Telegram credentials not set."
+    fi
+}
+
+generate_changelog() {
+    local device="$1"
+    local target_file="$2"
+    local repo_dir="${ANDROID_BUILD_TOP:-$PWD}"
+    local days=14
+
+    : >| "${target_file}"
+
+    for i in $(seq "$days"); do
+        local after_date=$(date --date="$i days ago" +%F)
+        local until_date=$(date --date="$((i - 1)) days ago" +%F)
+        local day_header_written=false
+
+        if [[ -f "${repo_dir}/.repo/project.list" ]]; then
+            while read -r project_path; do
+                local full_path="${repo_dir}/${project_path}"
+                
+                if [[ -d "${full_path}/.git" ]]; then
+                    local git_log=$(git --git-dir "${full_path}/.git" log \
+                        --after="${after_date} 00:00:00" \
+                        --until="${until_date} 23:59:59" \
+                        --format=tformat:"%h %s [%an]")
+
+                    if [[ -n "${git_log}" ]]; then
+                        if [[ "$day_header_written" == "false" ]]; then
+                            echo "====================" >> "${target_file}"
+                            echo "     $until_date    " >> "${target_file}"
+                            echo "====================" >> "${target_file}"
+                            day_header_written=true
+                        fi
+
+                        echo "* ${project_path}" >> "${target_file}"
+                        echo "${git_log}" >> "${target_file}"
+                        echo "" >> "${target_file}"
+                    fi
+                fi
+            done < "${repo_dir}/.repo/project.list"
+        fi
+    done
+}
+
+function release() {
+    local devices=()
+    local skip_sync=false
+    local skip_picks=false
+    local skip_ota=false
+    local use_vanilla=false
+    local top="${ANDROID_BUILD_TOP:-$PWD}"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --no-sync)  skip_sync=true; shift ;;
+            --no-picks) skip_picks=true; shift ;;
+            --no-ota)   skip_ota=true; shift ;;
+            --vanilla)  use_vanilla=true; shift ;;
+            *)          devices+=("$1"); shift ;;
+        esac
+    done
+
+    if [[ ${#devices[@]} -eq 0 ]]; then
+        echo "Usage: release [flags] <device> ..."
         return 1
     fi
 
-    # Allow comma separated input too
-    local arg
-    local devices=()
-    for arg in "$@"; do
-        IFS=',' read -r -a _tmp <<< "$arg"
-        devices+=("${_tmp[@]}")
-    done
+    if [[ "${use_vanilla}" == "true" ]]; then
+        unset WITH_GMS
+        unset GMS_MAKEFILE
+        unset TARGET_UNOFFICIAL_BUILD_ID
+        local variant_name="VANILLA"
+    else
+        export WITH_GMS=true
+        export GMS_MAKEFILE=gms.mk
+        export TARGET_UNOFFICIAL_BUILD_ID=GMS
+        local variant_name="GMS"
+    fi
 
-    local d
-    for d in "${devices[@]}"; do
-        echo "[INFO] === Starting ${d} ==="
-        if release "$d"; then
-            echo "[INFO] ${d} done. Freeing its OUT to save space..."
-            rm -rf "out/target/product/${d}" || true
-        else
-            echo "[ERROR] ${d} failed. Keeping OUT for debugging. Aborting batch."
+    cd "${top}" || return 1
+
+    if [[ "${skip_sync}" == "false" ]]; then
+        repo sync --force-sync -d -j18 || return 1
+    fi
+
+    if [[ "${skip_picks}" == "false" && -x "./picks" ]]; then
+        ./picks || return 1
+    fi
+
+    for device in "${devices[@]}"; do
+        
+        local project_name=$(basename "$PWD")
+        
+        telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *started* on ${HOSTNAME}."
+        
+        local build_start=$(date +%s)
+
+        rm -rf "out/target/product/${device}"
+        breakfast "${device}" || {
+             telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *failed* on ${HOSTNAME}."
+             return 1
+        }
+        
+        m bacon -j14 
+        local result=$?
+        local build_end=$(date +%s)
+        local diff=$((build_end - build_start))
+        local build_time=$(convertsecs "${diff}")
+
+        if [[ ${result} -ne 0 ]]; then
+            telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *failed* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
             return 1
         fi
-    done
+        
+        telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *completed successfully* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
 
-    echo "[INFO] All requested releases completed."
+        local out="${OUT:?OUT not set}"
+        local build_props="${out}/system/build.prop"
+        
+        local lineage_ver=$(sed -n 's/^ro\.lineage\.build\.version=//p' "${build_props}")
+        if [[ -z "${lineage_ver}" ]]; then
+            echo "[WARN] Could not detect Lineage version from build.prop, defaulting to Unknown"
+            lineage_ver="Unknown"
+        fi
+
+        local filename=""
+        if [[ -f "${build_props}" ]]; then
+            local ver_line=$(sed -n 's/^ro\.lineage\.version=//p' "${build_props}")
+            [[ -n "${ver_line}" ]] && filename="lineage-${ver_line}.zip"
+        fi
+        if [[ -z "${filename}" || ! -f "${out}/${filename}" ]]; then
+            filename=$(cd "${out}" && ls -1t lineage-*.zip 2>/dev/null | head -n1)
+        fi
+        
+        [[ -f "${out}/${filename}.sha256sum" ]] || (cd "${out}" && sha256sum "${filename}" > "${filename}.sha256sum")
+        
+        local raw_date=$(printf '%s\n' "${filename}" | grep -oE '[0-9]{8}' | head -n1)
+        local tag_name
+        if [[ "${raw_date}" =~ ^[0-9]{8}$ ]]; then
+            tag_name="${raw_date:4:2}${raw_date:6:2}${raw_date:0:4}"
+        else
+            tag_name="$(date +%m%d%Y)"
+        fi
+
+        local id=$(awk '{print $1}' "${out}/${filename}.sha256sum")
+        local romtype=$(sed -n 's/^ro\.lineage\.releasetype=//p' "${build_props}"); romtype="${romtype:-UNOFFICIAL}"
+        local datetime=$(sed -n 's/^ro\.build\.date\.utc=//p' "${build_props}"); datetime="${datetime:-$(date -u +%s)}"
+        local security_patch=$(sed -n 's/^ro\.build\.version\.security_patch=//p' "${build_props}")
+        local date_pretty=$(date -d @${datetime} +%F)
+        local size=$(stat -c%s "${out}/${filename}")
+
+        local sf_folder_url="https://sourceforge.net/projects/noprincesshere/files/lineage-${lineage_ver}/${device}/${tag_name}"
+        local sf_direct_url="${sf_folder_url}/$(basename "${filename}")/download"
+
+        if [[ "${skip_ota}" == "false" ]]; then
+            local ota_entry=$(jq -n \
+                --arg datetime "${datetime}" \
+                --arg filename "${filename}" \
+                --arg id "${id}" \
+                --arg romtype "${romtype}" \
+                --argjson size "${size}" \
+                --arg version "${lineage_ver}" \
+                --arg release_url "${sf_direct_url}" \
+                '{response:[{datetime:$datetime,filename:$filename,id:$id,romtype:$romtype,size:$size,url:$release_url,version:$version}]}')
+
+            (
+                cd "${top}/ota" || exit 1
+                git checkout master && git pull --rebase origin master || true
+                echo "${ota_entry}" >| "${device}.json"
+                generate_changelog "${device}" "${device}.txt"
+                git add "${device}.json" "${device}.txt"
+                if ! git diff --cached --quiet; then
+                    git commit -m "${device}: OTA update ${tag_name}"
+                    git push origin master
+                fi
+            )
+        fi
+
+        local remote_dir="${SF_PROJECT_ROOT}/lineage-${lineage_ver}/${device}/${tag_name}"
+
+        {
+            echo "-mkdir ${SF_PROJECT_ROOT}/lineage-${lineage_ver}"
+            echo "-mkdir ${SF_PROJECT_ROOT}/lineage-${lineage_ver}/${device}"
+            echo "-mkdir ${remote_dir}"
+        } | sftp -b - "${SF_USER}@${SF_HOST}" >/dev/null 2>&1 || true
+
+        echo "[INFO] Uploading main zip..."
+        rsync -Ph "${out}/${filename}" "${out}/${filename}.sha256sum" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+
+        local possible_images=("boot.img" "dtbo.img" "recovery.img" "vendor_boot.img" "vbmeta.img")
+        for img in "${possible_images[@]}"; do
+            if [[ -f "${out}/${img}" ]]; then
+                echo "Found ${img}, uploading..."
+                rsync -Ph "${out}/${img}" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+            fi
+        done
+
+        local changelog_link="https://raw.githubusercontent.com/basamaryan/ota/master/${device}.txt"
+        local full_device_name=$(get_device_name "$device")
+        
+        local release_msg="LineageOS ${lineage_ver} for ${full_device_name} (${device})
+
+📅 Build date: \`${date_pretty}\`
+🛡️ Security patch: \`${security_patch}\`
+💬 Variant: \`${variant_name}\`
+
+🗒️ [Changelog](${changelog_link})
+
+*Download*
+⬇️ [${project_name}](${sf_direct_url})
+⛭ [Additional files](${sf_folder_url})
+
+*SHA-256 checksum*
+\`${id}\`
+
+#${device}"
+
+        telegram_notify "${release_msg}"
+        
+        rm -rf "out/target/product/${device}"
+    done
 }

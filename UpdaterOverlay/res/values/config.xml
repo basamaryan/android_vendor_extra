@@ -7,4 +7,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- URL to be checked for OTA updates -->
     <string name="updater_server_url" translatable="false">https://raw.githubusercontent.com/basamaryan/ota/master/{device}.json</string>
+
+    <!-- URL to changelog -->
+    <string name="menu_changelog_url" translatable="false">https://raw.githubusercontent.com/basamaryan/ota/master/<xliff:g id="device_name">%1$s</xliff:g>.txt</string>
 </resources>

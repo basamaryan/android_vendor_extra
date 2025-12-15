@@ -224,18 +224,34 @@ function release() {
         echo "[INFO] Uploading main zip..."
         rsync -Ph "${out}/${filename}" "${out}/${filename}.sha256sum" "${SF_USER}@${SF_HOST}:${remote_dir}/"
 
-        local possible_images=("boot.img" "dtbo.img" "recovery.img" "vendor_boot.img" "vbmeta.img")
-        for img in "${possible_images[@]}"; do
+        local standard_images=("boot.img" "dtbo.img" "recovery.img")
+        for img in "${standard_images[@]}"; do
             if [[ -f "${out}/${img}" ]]; then
                 echo "Found ${img}, uploading..."
                 rsync -Ph "${out}/${img}" "${SF_USER}@${SF_HOST}:${remote_dir}/"
             fi
         done
 
+        local has_vendor_boot=false
+        if [[ -f "${out}/vendor_boot.img" ]]; then
+             echo "Found vendor_boot.img, uploading..."
+             rsync -Ph "${out}/vendor_boot.img" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+             has_vendor_boot=true
+        fi
+
+        if [[ -f "${out}/vbmeta.img" ]]; then
+            if [[ "${has_vendor_boot}" == "true" ]]; then
+                echo "Found vbmeta.img and vendor_boot present, uploading..."
+                rsync -Ph "${out}/vbmeta.img" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+            else
+                echo "Skipping vbmeta.img because vendor_boot.img was not found."
+            fi
+        fi
+
         local changelog_link="https://raw.githubusercontent.com/basamaryan/ota/master/${device}.txt"
         local full_device_name=$(get_device_name "$device")
         
-        local release_msg="LineageOS ${lineage_ver} for ${full_device_name} (${device})
+        local release_msg="*LineageOS ${lineage_ver} for ${full_device_name} (${device})*
 
 📅 Build date: \`${date_pretty}\`
 🛡️ Security patch: \`${security_patch}\`

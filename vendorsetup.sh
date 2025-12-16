@@ -7,6 +7,7 @@ export TARGET_UNOFFICIAL_BUILD_ID=GMS
 SF_USER="aryannn999"
 SF_HOST="frs.sourceforge.net"
 SF_PROJECT_ROOT="/home/frs/project/noprincesshere"
+JOBS=14
 
 convertsecs() {
     ((h=${1}/3600))
@@ -25,7 +26,7 @@ get_device_name() {
     esac
 }
 
-telegram_notify() {
+notify_chat() {
     local message="$1"
     if [[ -n "${TELEGRAM_TOKEN}" && -n "${TELEGRAM_CHAT}" ]]; then
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
@@ -34,7 +35,38 @@ telegram_notify() {
             -d parse_mode="Markdown" \
             -d disable_web_page_preview="true" > /dev/null
     else
-        echo "[WARN] Telegram credentials not set."
+        echo "[WARN] Chat credentials not set."
+    fi
+}
+
+notify_channel() {
+    local message="$1"
+    if [[ -n "${TELEGRAM_TOKEN}" && -n "${TELEGRAM_CHANNEL}" ]]; then
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHANNEL}" \
+            -d text="${message}" \
+            -d parse_mode="Markdown" \
+            -d disable_web_page_preview="true" > /dev/null
+    else
+        echo "[WARN] Channel credentials not set."
+    fi
+}
+
+upload_error_log() {
+    local device="$1"
+    local message="$2"
+    local log_file="out/error.log"
+
+    if [[ -n "${TELEGRAM_TOKEN}" && -n "${TELEGRAM_CHAT}" ]]; then
+        if [[ -f "${log_file}" ]]; then
+            curl -s -F chat_id="${TELEGRAM_CHAT}" \
+                 -F document=@"${log_file}" \
+                 -F caption="${message}" \
+                 -F parse_mode="Markdown" \
+                 "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument" > /dev/null
+        else
+            notify_chat "${message}"
+        fi
     fi
 }
 
@@ -93,12 +125,13 @@ function release() {
             --no-picks) skip_picks=true; shift ;;
             --no-ota)   skip_ota=true; shift ;;
             --vanilla)  use_vanilla=true; shift ;;
+            -j*)        JOBS="${1#-j}"; shift ;;
             *)          devices+=("$1"); shift ;;
         esac
     done
 
     if [[ ${#devices[@]} -eq 0 ]]; then
-        echo "Usage: release [flags] <device> ..."
+        echo "Usage: release [flags] <device> ... [-j18]"
         return 1
     fi
 
@@ -107,6 +140,7 @@ function release() {
         unset GMS_MAKEFILE
         unset TARGET_UNOFFICIAL_BUILD_ID
         local variant_name="VANILLA"
+        skip_ota=true
     else
         export WITH_GMS=true
         export GMS_MAKEFILE=gms.mk
@@ -117,7 +151,7 @@ function release() {
     cd "${top}" || return 1
 
     if [[ "${skip_sync}" == "false" ]]; then
-        repo sync --force-sync -d -j18 || return 1
+        repo sync --force-sync -d -j"${JOBS}" || return 1
     fi
 
     if [[ "${skip_picks}" == "false" && -x "./picks" ]]; then
@@ -128,28 +162,36 @@ function release() {
         
         local project_name=$(basename "$PWD")
         
-        telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *started* on ${HOSTNAME}."
+        notify_chat "*(i)* \`${project_name}\` compilation for \`${device}\` *started* on ${HOSTNAME}."
         
         local build_start=$(date +%s)
 
         rm -rf "out/target/product/${device}"
-        breakfast "${device}" || {
-             telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *failed* on ${HOSTNAME}."
-             return 1
-        }
+        breakfast "${device}"
+
+        if [[ $? -ne 0 ]]; then
+             local fail_msg="*(i)* \`${project_name}\` compilation for \`${device}\` *failed* during breakfast on ${HOSTNAME}."
+             upload_error_log "${device}" "${fail_msg}"
+             echo "[WARN] Breakfast failed. Cleaning up and skipping ${device}."
+             rm -rf "out/target/product/${device}"
+             continue
+        fi
         
-        m bacon -j14 
+        m bacon -j"${JOBS}"
         local result=$?
         local build_end=$(date +%s)
         local diff=$((build_end - build_start))
         local build_time=$(convertsecs "${diff}")
 
         if [[ ${result} -ne 0 ]]; then
-            telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *failed* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
-            return 1
+            local fail_msg="*(i)* \`${project_name}\` compilation for \`${device}\` *failed* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
+            upload_error_log "${device}" "${fail_msg}"
+            echo "[WARN] Build failed. Cleaning up and skipping ${device}."
+            rm -rf "out/target/product/${device}"
+            continue
         fi
         
-        telegram_notify "*(i)* \`${project_name}\` compilation for \`${device}\` *completed successfully* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
+        notify_chat "*(i)* \`${project_name}\` compilation for \`${device}\` *completed successfully* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
 
         local out="${OUT:?OUT not set}"
         local build_props="${out}/system/build.prop"
@@ -224,28 +266,33 @@ function release() {
         echo "[INFO] Uploading main zip..."
         rsync -Ph "${out}/${filename}" "${out}/${filename}.sha256sum" "${SF_USER}@${SF_HOST}:${remote_dir}/"
 
-        local standard_images=("boot.img" "dtbo.img" "recovery.img")
-        for img in "${standard_images[@]}"; do
-            if [[ -f "${out}/${img}" ]]; then
-                echo "Found ${img}, uploading..."
-                rsync -Ph "${out}/${img}" "${SF_USER}@${SF_HOST}:${remote_dir}/"
-            fi
-        done
+        # Only upload additional images if NOT vanilla
+        if [[ "${use_vanilla}" == "false" ]]; then
+            local standard_images=("boot.img" "dtbo.img" "recovery.img")
+            for img in "${standard_images[@]}"; do
+                if [[ -f "${out}/${img}" ]]; then
+                    echo "Found ${img}, uploading..."
+                    rsync -Ph "${out}/${img}" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+                fi
+            done
 
-        local has_vendor_boot=false
-        if [[ -f "${out}/vendor_boot.img" ]]; then
-             echo "Found vendor_boot.img, uploading..."
-             rsync -Ph "${out}/vendor_boot.img" "${SF_USER}@${SF_HOST}:${remote_dir}/"
-             has_vendor_boot=true
-        fi
-
-        if [[ -f "${out}/vbmeta.img" ]]; then
-            if [[ "${has_vendor_boot}" == "true" ]]; then
-                echo "Found vbmeta.img and vendor_boot present, uploading..."
-                rsync -Ph "${out}/vbmeta.img" "${SF_USER}@${SF_HOST}:${remote_dir}/"
-            else
-                echo "Skipping vbmeta.img because vendor_boot.img was not found."
+            local has_vendor_boot=false
+            if [[ -f "${out}/vendor_boot.img" ]]; then
+                 echo "Found vendor_boot.img, uploading..."
+                 rsync -Ph "${out}/vendor_boot.img" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+                 has_vendor_boot=true
             fi
+
+            if [[ -f "${out}/vbmeta.img" ]]; then
+                if [[ "${has_vendor_boot}" == "true" ]]; then
+                    echo "Found vbmeta.img and vendor_boot present, uploading..."
+                    rsync -Ph "${out}/vbmeta.img" "${SF_USER}@${SF_HOST}:${remote_dir}/"
+                else
+                    echo "Skipping vbmeta.img because vendor_boot.img was not found."
+                fi
+            fi
+        else
+            echo "[INFO] Vanilla build: Skipping upload of boot/recovery images."
         fi
 
         local changelog_link="https://raw.githubusercontent.com/basamaryan/ota/master/${device}.txt"
@@ -268,7 +315,7 @@ function release() {
 
 #${device}"
 
-        telegram_notify "${release_msg}"
+        notify_channel "${release_msg}"
         
         rm -rf "out/target/product/${device}"
     done

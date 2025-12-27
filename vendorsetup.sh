@@ -194,23 +194,29 @@ function release() {
         notify_chat "*(i)* \`${project_name}\` compilation for \`${device}\` *completed successfully* on ${HOSTNAME}. Build variant: \`${variant_name}\`. Build time: \`${build_time}\`."
 
         local out="${OUT:?OUT not set}"
-        local build_props="${out}/system/build.prop"
+
+        local lineage_ver=$(cat "${out}/system/build.prop" "${out}/product/etc/build.prop" | grep "ro.lineage.build.version=" | head -n 1)
+        lineage_ver="${lineage_ver#*=}"
         
-        local lineage_ver=$(sed -n 's/^ro\.lineage\.build\.version=//p' "${build_props}")
         if [[ -z "${lineage_ver}" ]]; then
-            echo "[WARN] Could not detect Lineage version from build.prop, defaulting to Unknown"
+            echo "[WARN] Could not detect Lineage version, defaulting to Unknown"
             lineage_ver="Unknown"
         fi
 
         local filename=""
-        if [[ -f "${build_props}" ]]; then
-            local ver_line=$(sed -n 's/^ro\.lineage\.version=//p' "${build_props}")
-            [[ -n "${ver_line}" ]] && filename="lineage-${ver_line}.zip"
-        fi
+        local ver_line=$(cat "${out}/system/build.prop" "${out}/product/etc/build.prop" | grep "ro.lineage.version=" | head -n 1)
+        ver_line="${ver_line#*=}"
+
+        [[ -n "${ver_line}" ]] && filename="lineage-${ver_line}.zip"
+
         if [[ -z "${filename}" || ! -f "${out}/${filename}" ]]; then
             filename=$(cd "${out}" && ls -1t lineage-*.zip 2>/dev/null | head -n1)
         fi
-        
+
+        local romtype=$(cat "${out}/system/build.prop" "${out}/product/etc/build.prop" | grep "ro.lineage.releasetype=" | head -n 1)
+        romtype="${romtype#*=}"
+        romtype="${romtype:-UNOFFICIAL}"
+
         [[ -f "${out}/${filename}.sha256sum" ]] || (cd "${out}" && sha256sum "${filename}" > "${filename}.sha256sum")
         
         local raw_date=$(printf '%s\n' "${filename}" | grep -oE '[0-9]{8}' | head -n1)
@@ -222,9 +228,8 @@ function release() {
         fi
 
         local id=$(awk '{print $1}' "${out}/${filename}.sha256sum")
-        local romtype=$(sed -n 's/^ro\.lineage\.releasetype=//p' "${build_props}"); romtype="${romtype:-UNOFFICIAL}"
-        local datetime=$(sed -n 's/^ro\.build\.date\.utc=//p' "${build_props}"); datetime="${datetime:-$(date -u +%s)}"
-        local security_patch=$(sed -n 's/^ro\.build\.version\.security_patch=//p' "${build_props}")
+        local datetime=$(sed -n 's/^ro\.build\.date\.utc=//p' "${out}/system/build.prop"); datetime="${datetime:-$(date -u +%s)}"
+        local security_patch=$(sed -n 's/^ro\.build\.version\.security_patch=//p' "${out}/system/build.prop")
         local date_pretty=$(date -d @${datetime} +%F)
         local size=$(stat -c%s "${out}/${filename}")
 

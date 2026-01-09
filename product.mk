@@ -22,5 +22,5 @@ PRODUCT_PACKAGES += \
     SettingsOverlayCustom
 
 # Pixel Goodies
-$(call inherit-product-if-exists, device/google/pixel-goodies/product.mk)
+$(call inherit-product-if-exists, vendor/google/pixel-goodies/product.mk)
 endif

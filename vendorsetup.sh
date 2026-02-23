@@ -79,8 +79,8 @@ generate_changelog() {
     : >| "${target_file}"
 
     for i in $(seq "$days"); do
-        local after_date=$(date --date="$i days ago" +%F)
-        local until_date=$(date --date="$((i - 1)) days ago" +%F)
+        local after_date=$(date -u --date="$i days ago" +%F)
+        local until_date=$(date -u --date="$((i - 1)) days ago" +%F)
         local day_header_written=false
 
         if [[ -f "${repo_dir}/.repo/project.list" ]]; then
@@ -219,19 +219,13 @@ function release() {
 
         [[ -f "${out}/${filename}.sha256sum" ]] || (cd "${out}" && sha256sum "${filename}" > "${filename}.sha256sum")
         
-        local raw_date=$(printf '%s\n' "${filename}" | grep -oE '[0-9]{8}' | head -n1)
-        local tag_name
-        if [[ "${raw_date}" =~ ^[0-9]{8}$ ]]; then
-            tag_name="${raw_date:4:2}${raw_date:6:2}${raw_date:0:4}"
-        else
-            tag_name="$(date +%m%d%Y)"
-        fi
-
         local id=$(awk '{print $1}' "${out}/${filename}.sha256sum")
         local datetime=$(sed -n 's/^ro\.build\.date\.utc=//p' "${out}/system/build.prop"); datetime="${datetime:-$(date -u +%s)}"
         local security_patch=$(sed -n 's/^ro\.build\.version\.security_patch=//p' "${out}/system/build.prop")
-        local date_pretty=$(date -d @${datetime} +%F)
+        local date_pretty=$(date -u -d @${datetime} +%F)
         local size=$(stat -c%s "${out}/${filename}")
+
+        local tag_name=$(date -u -d @"${datetime}" +%m%d%Y)
 
         local sf_folder_url="https://sourceforge.net/projects/noprincesshere/files/lineage-${lineage_ver}/${device}/${tag_name}"
         local sf_direct_url="${sf_folder_url}/$(basename "${filename}")/download"

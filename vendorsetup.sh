@@ -22,6 +22,7 @@ get_device_name() {
         "sweet")   echo "Xiaomi Redmi Note 10 Pro / Redmi Note 10 Pro Max" ;;
         "kiev")    echo "Motorola moto g 5G / moto one 5G ace" ;;
         "davinci") echo "Xiaomi Redmi K20 / Mi 9T" ;;
+        "Q25")     echo "Zinwa Q25" ;;
         *)         echo "$1" ;; 
     esac
 }

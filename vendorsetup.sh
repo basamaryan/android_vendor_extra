@@ -160,7 +160,14 @@ function release() {
     fi
 
     for device in "${devices[@]}"; do
-        
+
+        unset UNSAFE_DISABLE_HIDDENAPI_FLAGS
+        if [[ "${use_vanilla}" == "false" ]]; then
+            export WITH_GMS=true
+            export GMS_MAKEFILE=gms.mk
+            export TARGET_UNOFFICIAL_BUILD_ID=GMS
+        fi
+
         local project_name=$(basename "$PWD")
         
         notify_chat "*(i)* \`${project_name}\` compilation for \`${device}\` *started* on ${HOSTNAME}."

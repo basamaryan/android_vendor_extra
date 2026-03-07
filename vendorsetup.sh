@@ -164,26 +164,27 @@ apply_patches() {
 
     #./vendor/lineage/build/tools/repopick.py -t md3e-flags
 
-    if [[ ! -d "${patches_path}" ]]; then
+    if [[ -d "${patches_path}" ]]; then
+        for project_name in $(cd "${patches_path}"; echo */); do
+            [[ "${project_name}" == "*/" ]] && continue
+            local project_path="$(tr _ / <<<"${project_name}")"
+            project_path="${project_path%/}"
+
+            cd "${top}/${project_path}" || continue
+
+            echo "Applying patches for project: ${project_name}"
+            if ! git am "${patches_path}/${project_name}"*.patch --no-gpg-sign; then
+                echo "Failed to apply patches for project: ${project_name}. Aborting."
+                git am --abort &>/dev/null
+            fi
+
+            cd "${top}"
+        done
+    else
         echo "[INFO] No patches directory found, skipping local patches."
-        return 0
     fi
 
-    for project_name in $(cd "${patches_path}"; echo */); do
-        [[ "${project_name}" == "*/" ]] && continue
-        local project_path="$(tr _ / <<<"${project_name}")"
-        project_path="${project_path%/}"
-
-        cd "${top}/${project_path}" || continue
-
-        echo "Applying patches for project: ${project_name}"
-        if ! git am "${patches_path}/${project_name}"*.patch --no-gpg-sign; then
-            echo "Failed to apply patches for project: ${project_name}. Aborting."
-            git am --abort &>/dev/null
-        fi
-
-        cd "${top}"
-    done
+    [[ -x "./picks" ]] && ./picks
 }
 
 function release() {
@@ -231,7 +232,6 @@ function release() {
 
     if [[ "${skip_picks}" == "false" ]]; then
         apply_patches
-        [[ -x "./picks" ]] && ./picks || return 1
     fi
 
     for device in "${devices[@]}"; do

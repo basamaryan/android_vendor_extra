@@ -140,6 +140,8 @@ sync() {
 
     cd "${top}" || return 1
 
+    repo sync --force-sync -d -j"${JOBS}" || return 1
+
     sync_repo hardware/xiaomi                "${lineage}/android_hardware_xiaomi"
     sync_repo hardware/motorola              "${lineage}/android_hardware_motorola"
     sync_repo hardware/oplus                 "${lineage}/android_hardware_oplus"

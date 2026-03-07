@@ -1,0 +1,56 @@
+From 6bb5b32c0a278065c049b4c6f5e8c66e3aebddc1 Mon Sep 17 00:00:00 2001
+From: Dhina17 <dhinalogu@gmail.com>
+Date: Sat, 9 Nov 2024 13:40:00 +0530
+Subject: [PATCH 12/12] SystemUI: Remove screenshot action chip labels
+
+With label, it kinda looks messy.
+Icons are descriptive enough to understand the action.
+
+Change-Id: I3a9e33c036f3f6ada98f036e06db8a55c3093082
+---
+ .../systemui/screenshot/ScreenshotActionsProvider.kt      | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotActionsProvider.kt b/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotActionsProvider.kt
+index 7360002d6eea..9dde6e2e7af0 100644
+--- a/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotActionsProvider.kt
++++ b/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotActionsProvider.kt
+@@ -102,7 +102,7 @@ constructor(
+         actionsCallback.provideActionButton(
+             ActionButtonAppearance(
+                 AppCompatResources.getDrawable(context, R.drawable.ic_screenshot_share),
+-                context.resources.getString(R.string.screenshot_share_label),
++                null, // context.resources.getString(R.string.screenshot_share_label),
+                 context.resources.getString(R.string.screenshot_share_description),
+             ),
+             showDuringEntrance = true,
+@@ -127,7 +127,7 @@ constructor(
+         actionsCallback.provideActionButton(
+             ActionButtonAppearance(
+                 AppCompatResources.getDrawable(context, R.drawable.ic_screenshot_edit),
+-                context.resources.getString(R.string.screenshot_edit_label),
++                null, // context.resources.getString(R.string.screenshot_edit_label),
+                 context.resources.getString(R.string.screenshot_edit_description),
+             ),
+             showDuringEntrance = true,
+@@ -146,7 +146,7 @@ constructor(
+         actionsCallback.provideActionButton(
+             ActionButtonAppearance(
+                 AppCompatResources.getDrawable(context, R.drawable.ic_screenshot_delete),
+-                context.resources.getString(R.string.screenshot_delete_label),
++                null, // context.resources.getString(R.string.screenshot_delete_label),
+                 context.resources.getString(R.string.screenshot_delete_description),
+             ),
+             showDuringEntrance = true,
+@@ -167,7 +167,7 @@ constructor(
+             actionsCallback.provideActionButton(
+                 ActionButtonAppearance(
+                     AppCompatResources.getDrawable(context, R.drawable.ic_screenshot_scroll),
+-                    context.resources.getString(R.string.screenshot_scroll_label),
++                    null, // context.resources.getString(R.string.screenshot_scroll_label),
+                     context.resources.getString(R.string.screenshot_scroll_label),
+                 ),
+                 showDuringEntrance = true,
+-- 
+2.53.0
+

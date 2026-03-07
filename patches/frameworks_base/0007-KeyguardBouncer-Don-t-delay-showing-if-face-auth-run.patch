@@ -1,0 +1,44 @@
+From 93aff4b423a286fcf1189a9f9f99c5b4ccf89332 Mon Sep 17 00:00:00 2001
+From: jhenrique09 <jhsv09@gmail.com>
+Date: Sat, 12 Feb 2022 17:46:32 -0300
+Subject: [PATCH 07/12] KeyguardBouncer: Don't delay showing if face auth
+ running
+
+[someone5678] Forward port to A13 QPR3
+
+Change-Id: I1897aa22a9c29627b2f03e14f093151453df7be4
+---
+ .../domain/interactor/PrimaryBouncerInteractor.kt      | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/bouncer/domain/interactor/PrimaryBouncerInteractor.kt b/packages/SystemUI/src/com/android/systemui/bouncer/domain/interactor/PrimaryBouncerInteractor.kt
+index 86903ca1b765..4c634f22ea07 100644
+--- a/packages/SystemUI/src/com/android/systemui/bouncer/domain/interactor/PrimaryBouncerInteractor.kt
++++ b/packages/SystemUI/src/com/android/systemui/bouncer/domain/interactor/PrimaryBouncerInteractor.kt
+@@ -79,9 +79,6 @@ constructor(
+     private val selectedUserInteractor: SelectedUserInteractor,
+     private val deviceEntryFaceAuthInteractor: DeviceEntryFaceAuthInteractor,
+ ) {
+-    private val passiveAuthBouncerDelay =
+-        context.resources.getInteger(R.integer.primary_bouncer_passive_auth_delay).toLong()
+-
+     /** Runnable to show the primary bouncer. */
+     val showRunnable = Runnable {
+         repository.setPrimaryShow(true)
+@@ -179,12 +176,7 @@ constructor(
+ 
+             Log.i(TAG, "Show primary bouncer requested, reason: $reason")
+             repository.setPrimaryShowingSoon(true)
+-            if (usePrimaryBouncerPassiveAuthDelay()) {
+-                Log.d(TAG, "delay bouncer, passive auth may succeed")
+-                mainHandler.postDelayed(showRunnable, passiveAuthBouncerDelay)
+-            } else {
+-                DejankUtils.postAfterTraversal(showRunnable)
+-            }
++            DejankUtils.postAfterTraversal(showRunnable)
+             keyguardStateController.notifyPrimaryBouncerShowing(true)
+             primaryBouncerCallbackInteractor.dispatchStartingToShow()
+             return true
+-- 
+2.53.0
+

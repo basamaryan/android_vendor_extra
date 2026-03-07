@@ -1,0 +1,26 @@
+From 6d62494832077c1193fecc5504c3bffecd539e96 Mon Sep 17 00:00:00 2001
+From: pjgowtham <pjgowtham@gmail.com>
+Date: Tue, 12 Mar 2024 21:37:23 +0530
+Subject: [PATCH] check_boot_jars: Add oplus package names to allowed list
+
+Change-Id: I962d7868fefc5a9bf73af3c6c9c81c27813d5fa9
+---
+ scripts/check_boot_jars/package_allowed_list.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/scripts/check_boot_jars/package_allowed_list.txt b/scripts/check_boot_jars/package_allowed_list.txt
+index be1f95a67..ce8eba203 100644
+--- a/scripts/check_boot_jars/package_allowed_list.txt
++++ b/scripts/check_boot_jars/package_allowed_list.txt
+@@ -291,6 +291,8 @@ com\.nvidia\..*
+ 
+ # OPLUS adds
+ com\.oplus\..*
++net\.oneplus\..*
++oplus\..*
+ 
+ # QC adds
+ com.qualcomm.qti
+-- 
+2.53.0
+

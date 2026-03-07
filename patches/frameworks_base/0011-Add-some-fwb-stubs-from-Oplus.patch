@@ -1,0 +1,48 @@
+From 332f8f00d6c4e8f9d3b294045457a1dd762404cb Mon Sep 17 00:00:00 2001
+From: DennySPb <DennySPb@gmail.com>
+Date: Fri, 9 Feb 2024 11:31:27 +0300
+Subject: [PATCH 11/12] Add some fwb stubs from Oplus
+
+This fixes Realme Link crash issue
+
+Realme link tries to use reflection api for some oplus methods.
+Normally the are not presents if it is not oppo phone. They catch exception and all work fine,
+but on oplus/realme phones with imported oplus fwk for camera this doesn't work because we have
+these methods in separate boot jar and got denial from system on these hidden api methods.
+So, just move this harmless crap to FWB and annotate it properly.
+
+Change-Id: I5ffecc9be52505371400b0b976c5f14e66bd853d
+---
+ core/java/com/oplus/theme/OplusThemeUtil.java        | 9 +++++++++
+ core/java/com/oplus/util/OplusTypeCastingHelper.java | 3 +++
+ 2 files changed, 12 insertions(+)
+ create mode 100644 core/java/com/oplus/theme/OplusThemeUtil.java
+ create mode 100644 core/java/com/oplus/util/OplusTypeCastingHelper.java
+
+diff --git a/core/java/com/oplus/theme/OplusThemeUtil.java b/core/java/com/oplus/theme/OplusThemeUtil.java
+new file mode 100644
+index 000000000000..cea1cfd31b83
+--- /dev/null
++++ b/core/java/com/oplus/theme/OplusThemeUtil.java
+@@ -0,0 +1,9 @@
++package com.oplus.theme;
++
++import android.compat.annotation.UnsupportedAppUsage;
++
++public class OplusThemeUtil {
++    /** @hide */
++    @UnsupportedAppUsage
++    public static String CUSTOM_THEME_PATH = "/data/theme/com.oplus.camera";
++}
+diff --git a/core/java/com/oplus/util/OplusTypeCastingHelper.java b/core/java/com/oplus/util/OplusTypeCastingHelper.java
+new file mode 100644
+index 000000000000..fb89699ee373
+--- /dev/null
++++ b/core/java/com/oplus/util/OplusTypeCastingHelper.java
+@@ -0,0 +1,3 @@
++package com.oplus.util;
++
++public final class OplusTypeCastingHelper { }
+-- 
+2.53.0
+

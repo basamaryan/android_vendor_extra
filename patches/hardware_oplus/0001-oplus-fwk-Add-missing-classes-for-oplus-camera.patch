@@ -1,0 +1,2429 @@
+From 16b7a93634fe2cb48dcc468e7dfbeb0857b8a164 Mon Sep 17 00:00:00 2001
+From: cjh1249131356 <cjh1249131356@gmail.com>
+Date: Wed, 6 Nov 2024 20:36:28 +0530
+Subject: [PATCH] oplus-fwk: Add missing classes for oplus camera
+
+Co-authored-by: chandu078 <chandudyavanapelli03@gmail.com>
+Change-Id: Id3eb8b546bf3b3d62a4ef4287ad5a4cfe3c140de
+---
+ .../src/android/app/OplusActivityManager.java |  25 +
+ .../android/app/OplusWhiteListManager.java    |  18 +
+ .../src/android/app/job/IJobInfoExt.java      |  43 +
+ .../bluetooth/OplusBluetoothAdapter.java      |  13 +
+ .../content/res/OplusBaseConfiguration.java   |  10 +
+ .../hardware/camera2/IOplusCameraManager.java |  66 ++
+ .../hardware/camera2/OplusCameraManager.java  | 869 ++++++++++++++++++
+ .../src/android/os/OplusKeyEventManager.java  |  10 +
+ oplus-fwk/src/android/os/OplusManager.java    |   8 +
+ .../src/android/os/OplusSystemProperties.java |  20 +
+ .../src/android/view/OplusWindowManager.java  |   8 +
+ .../animation/OplusBezierInterpolator.java    |  31 +
+ .../view/animation/OplusUnitBezier.java       |  78 ++
+ .../oplus/app/OPlusAccessControlManager.java  |  25 +
+ .../src/com/oplus/app/OplusAppEnterInfo.java  |   6 +
+ .../src/com/oplus/app/OplusAppExitInfo.java   |   6 +
+ oplus-fwk/src/com/oplus/app/OplusAppInfo.java |   6 +
+ .../com/oplus/app/OplusAppSwitchConfig.java   |   8 +
+ .../com/oplus/app/OplusAppSwitchManager.java  |  37 +
+ .../flexiblewindow/FlexibleTaskView.java      |  38 +
+ .../com/oplus/orms/OplusResourceManager.java  |  19 +
+ .../src/com/oplus/orms/info/OrmsSaParam.java  |   8 +
+ oplus-fwk/src/com/oplus/os/OplusBuild.java    |  18 +
+ .../src/com/oplus/os/OplusUsbEnvironment.java | 158 ++++
+ .../src/com/oplus/os/WaveformEffect.java      | 114 +++
+ .../oplus/osense/OsenseResEventClient.java    |  13 +
+ .../eventinfo/IOsenseEventCallback.java       |  22 +
+ .../osense/eventinfo/OsenseEventCallback.java |   6 +
+ .../OplusLongshotCustomController.java        |   6 +
+ .../screenshot/OplusLongshotViewBase.java     |  20 +
+ .../screenshot/OplusLongshowViewInfo.java     |   6 +
+ .../oplus/uifirst/IOplusUIFirstManager.java   |   2 +
+ .../oplus/uifirst/OplusUIFirstManager.java    |   4 +
+ .../com/oplus/util/OplusChangeTextUtil.java   |  52 ++
+ .../src/com/oplus/util/OplusNetworkUtil.java  |  40 +
+ .../com/oplus/wrapper/os/PowerManager.java    |  14 +
+ .../com/oplus/wrapper/os/ServiceManager.java  |  18 +
+ .../oplus/wrapper/os/SystemProperties.java    |  24 +
+ .../oplus/wrapper/view/IWindowManager.java    |  86 ++
+ .../zoomwindow/IOplusZoomWindowObserver.aidl  |  11 +
+ .../oplus/zoomwindow/OplusZoomWindowInfo.aidl |   3 +
+ .../oplus/zoomwindow/OplusZoomWindowInfo.java |  37 +
+ .../zoomwindow/OplusZoomWindowManager.java    |  21 +
+ .../oneplus/odm/OpDeviceManagerInjector.java  |  19 +
+ .../content/res/OplusExtraConfiguration.java  |   6 +
+ 45 files changed, 2052 insertions(+)
+ create mode 100644 oplus-fwk/src/android/app/OplusActivityManager.java
+ create mode 100644 oplus-fwk/src/android/app/OplusWhiteListManager.java
+ create mode 100644 oplus-fwk/src/android/app/job/IJobInfoExt.java
+ create mode 100644 oplus-fwk/src/android/bluetooth/OplusBluetoothAdapter.java
+ create mode 100644 oplus-fwk/src/android/content/res/OplusBaseConfiguration.java
+ create mode 100644 oplus-fwk/src/android/hardware/camera2/IOplusCameraManager.java
+ create mode 100644 oplus-fwk/src/android/hardware/camera2/OplusCameraManager.java
+ create mode 100644 oplus-fwk/src/android/os/OplusKeyEventManager.java
+ create mode 100644 oplus-fwk/src/android/os/OplusManager.java
+ create mode 100644 oplus-fwk/src/android/os/OplusSystemProperties.java
+ create mode 100644 oplus-fwk/src/android/view/OplusWindowManager.java
+ create mode 100644 oplus-fwk/src/android/view/animation/OplusBezierInterpolator.java
+ create mode 100644 oplus-fwk/src/android/view/animation/OplusUnitBezier.java
+ create mode 100644 oplus-fwk/src/com/oplus/app/OPlusAccessControlManager.java
+ create mode 100644 oplus-fwk/src/com/oplus/app/OplusAppEnterInfo.java
+ create mode 100644 oplus-fwk/src/com/oplus/app/OplusAppExitInfo.java
+ create mode 100644 oplus-fwk/src/com/oplus/app/OplusAppInfo.java
+ create mode 100644 oplus-fwk/src/com/oplus/app/OplusAppSwitchConfig.java
+ create mode 100644 oplus-fwk/src/com/oplus/app/OplusAppSwitchManager.java
+ create mode 100644 oplus-fwk/src/com/oplus/flexiblewindow/FlexibleTaskView.java
+ create mode 100644 oplus-fwk/src/com/oplus/orms/OplusResourceManager.java
+ create mode 100644 oplus-fwk/src/com/oplus/orms/info/OrmsSaParam.java
+ create mode 100644 oplus-fwk/src/com/oplus/os/OplusBuild.java
+ create mode 100644 oplus-fwk/src/com/oplus/os/OplusUsbEnvironment.java
+ create mode 100644 oplus-fwk/src/com/oplus/os/WaveformEffect.java
+ create mode 100644 oplus-fwk/src/com/oplus/osense/OsenseResEventClient.java
+ create mode 100644 oplus-fwk/src/com/oplus/osense/eventinfo/IOsenseEventCallback.java
+ create mode 100644 oplus-fwk/src/com/oplus/osense/eventinfo/OsenseEventCallback.java
+ create mode 100644 oplus-fwk/src/com/oplus/screenshot/OplusLongshotCustomController.java
+ create mode 100644 oplus-fwk/src/com/oplus/screenshot/OplusLongshotViewBase.java
+ create mode 100644 oplus-fwk/src/com/oplus/screenshot/OplusLongshowViewInfo.java
+ create mode 100644 oplus-fwk/src/com/oplus/util/OplusChangeTextUtil.java
+ create mode 100644 oplus-fwk/src/com/oplus/util/OplusNetworkUtil.java
+ create mode 100644 oplus-fwk/src/com/oplus/wrapper/os/PowerManager.java
+ create mode 100644 oplus-fwk/src/com/oplus/wrapper/os/ServiceManager.java
+ create mode 100644 oplus-fwk/src/com/oplus/wrapper/os/SystemProperties.java
+ create mode 100644 oplus-fwk/src/com/oplus/wrapper/view/IWindowManager.java
+ create mode 100644 oplus-fwk/src/com/oplus/zoomwindow/IOplusZoomWindowObserver.aidl
+ create mode 100644 oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.aidl
+ create mode 100644 oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.java
+ create mode 100644 oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowManager.java
+ create mode 100644 oplus-fwk/src/net/oneplus/odm/OpDeviceManagerInjector.java
+ create mode 100644 oplus-fwk/src/oplus/content/res/OplusExtraConfiguration.java
+
+diff --git a/oplus-fwk/src/android/app/OplusActivityManager.java b/oplus-fwk/src/android/app/OplusActivityManager.java
+new file mode 100644
+index 00000000..3d51afce
+--- /dev/null
++++ b/oplus-fwk/src/android/app/OplusActivityManager.java
+@@ -0,0 +1,25 @@
++package android.app;
++
++import android.os.RemoteException;
++
++import com.oplus.app.OplusAppInfo;
++
++import java.util.ArrayList;
++import java.util.List;
++
++public class OplusActivityManager {
++
++    private static OplusActivityManager sOplusActivityManager = null;
++    private static ArrayList<OplusAppInfo> sTopAppInfos = new ArrayList<OplusAppInfo>();
++
++    public static OplusActivityManager getInstance() {
++        if (sOplusActivityManager == null) {
++            sOplusActivityManager = new OplusActivityManager();
++        }
++        return sOplusActivityManager;
++    }
++
++    public List<OplusAppInfo> getAllTopAppInfos() throws RemoteException {
++        return (ArrayList<OplusAppInfo>) sTopAppInfos.clone();
++    }
++}
+diff --git a/oplus-fwk/src/android/app/OplusWhiteListManager.java b/oplus-fwk/src/android/app/OplusWhiteListManager.java
+new file mode 100644
+index 00000000..6c6d1e5a
+--- /dev/null
++++ b/oplus-fwk/src/android/app/OplusWhiteListManager.java
+@@ -0,0 +1,18 @@
++package android.app;
++
++import android.content.Context;
++
++import java.util.ArrayList;
++
++public class OplusWhiteListManager {
++
++    public OplusWhiteListManager(Context context) {}
++
++    public ArrayList<String> getStageProtectListFromPkg(String calledPkg, int type) {
++        return new ArrayList<>();
++    }
++
++    public void addStageProtectInfo(String pkg, long timeout) {}
++
++    public void removeStageProtectInfo(String pkg) {}
++}
+diff --git a/oplus-fwk/src/android/app/job/IJobInfoExt.java b/oplus-fwk/src/android/app/job/IJobInfoExt.java
+new file mode 100644
+index 00000000..d8b96e95
+--- /dev/null
++++ b/oplus-fwk/src/android/app/job/IJobInfoExt.java
+@@ -0,0 +1,43 @@
++package android.app.job;
++
++public interface IJobInfoExt {
++
++    public final class JobBuilderExt {
++
++        public boolean mIsOplusJob;
++
++        public JobBuilderExt setRequiresBattIdle(boolean requiresBattIdle, int extra) {
++            return this;
++        }
++    }
++
++    default boolean getBooleanConstraint(String type, boolean defValue) {
++        return defValue;
++    }
++
++    default String getStringConstraint(String type, String defValue) {
++        return defValue;
++    }
++
++    default int getIntConstraint(String type, int defValue) {
++        return defValue;
++    }
++
++    default long getLongConstraint(String type, long defValue) {
++        return defValue;
++    }
++
++    default void setBooleanConstraint(String type, boolean value) {}
++
++    default void setStringConstraint(String type, String value) {}
++
++    default void setIntConstraint(String type, int value) {}
++
++    default void setLongConstraint(JobInfo job, String type, long value) {}
++
++    default void initJobInfo(Object in) {}
++
++    default void initJobInfoPure(JobBuilderExt jobBuilderExt) {}
++
++    default void writeToParcelJobInfo(Object out, int flags) {}
++}
+diff --git a/oplus-fwk/src/android/bluetooth/OplusBluetoothAdapter.java b/oplus-fwk/src/android/bluetooth/OplusBluetoothAdapter.java
+new file mode 100644
+index 00000000..c542d254
+--- /dev/null
++++ b/oplus-fwk/src/android/bluetooth/OplusBluetoothAdapter.java
+@@ -0,0 +1,13 @@
++package android.bluetooth;
++
++public class OplusBluetoothAdapter {
++
++    private static OplusBluetoothAdapter sAdapter = null;
++    
++    public static OplusBluetoothAdapter getOplusBluetoothAdapter() {
++        if (sAdapter == null) {
++            sAdapter = new OplusBluetoothAdapter();
++        }
++        return sAdapter;
++    }
++}
+diff --git a/oplus-fwk/src/android/content/res/OplusBaseConfiguration.java b/oplus-fwk/src/android/content/res/OplusBaseConfiguration.java
+new file mode 100644
+index 00000000..0f65fdd1
+--- /dev/null
++++ b/oplus-fwk/src/android/content/res/OplusBaseConfiguration.java
+@@ -0,0 +1,10 @@
++package android.content.res;
++
++import oplus.content.res.OplusExtraConfiguration;
++
++public abstract class OplusBaseConfiguration {
++
++    public OplusExtraConfiguration getOplusExtraConfiguration() {
++        return null;
++    }
++}
+diff --git a/oplus-fwk/src/android/hardware/camera2/IOplusCameraManager.java b/oplus-fwk/src/android/hardware/camera2/IOplusCameraManager.java
+new file mode 100644
+index 00000000..f229522f
+--- /dev/null
++++ b/oplus-fwk/src/android/hardware/camera2/IOplusCameraManager.java
+@@ -0,0 +1,66 @@
++package android.hardware.camera2;
++
++import android.common.IOplusCommonFeature;
++import android.common.OplusFeatureList;
++import android.content.Context;
++import android.os.IBinder;
++
++/* loaded from: classes.dex */
++public interface IOplusCameraManager extends IOplusCommonFeature {
++    public static final IOplusCameraManager DEFAULT = new IOplusCameraManager() { // from class: android.hardware.camera2.IOplusCameraManager.1
++    };
++    public static final String NAME = "IOplusCameraManager";
++
++    /* loaded from: classes.dex */
++    public enum Cmd {
++        CMD_NONE,
++        CMD_PRE_CAPTURE,
++        CMD_PRE_OPEN,
++        CMD_PRE_EVLIST,
++        CMD_READ_MEM
++    }
++
++    default OplusFeatureList.OplusIndex index() {
++        return OplusFeatureList.OplusIndex.IOplusCameraManager;
++    }
++
++    default IOplusCommonFeature getDefault() {
++        return DEFAULT;
++    }
++
++    default void addAuthResultInfo(Context context, int uid, int pid, int permBits, String packageName) {
++    }
++
++    default void setDeathRecipient(IBinder client) {
++    }
++
++    default boolean isAuthedClient(Context context) {
++        return false;
++    }
++
++    default void preOpenCamera(Context context) {
++    }
++
++    default void sendOplusExtCamCmd(Context context, Cmd cmd, int[] param) {
++    }
++
++    default void setCallInfo() {
++    }
++
++    default void saveOpPackageName(String packageName) {
++    }
++
++    default void setPackageName() {
++    }
++
++    default boolean isPrivilegedApp(String packageName) {
++        return false;
++    }
++
++    default boolean isCameraUnitSession() {
++        return false;
++    }
++
++    default void parseSessionParameters(CaptureRequest sessionParams) {
++    }
++}
+diff --git a/oplus-fwk/src/android/hardware/camera2/OplusCameraManager.java b/oplus-fwk/src/android/hardware/camera2/OplusCameraManager.java
+new file mode 100644
+index 00000000..1dc7e1b7
+--- /dev/null
++++ b/oplus-fwk/src/android/hardware/camera2/OplusCameraManager.java
+@@ -0,0 +1,869 @@
++package android.hardware.camera2;
++
++import android.content.Context;
++import android.hardware.camera2.CaptureRequest;
++import android.hardware.camera2.IOplusCameraManager;
++import android.hardware.camera2.impl.CameraMetadataNative;
++import android.media.Image;
++import android.media.ImageReader;
++import android.os.Binder;
++import android.os.IBinder;
++import android.os.Parcel;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.os.SystemProperties;
++import android.util.Log;
++import java.lang.reflect.Field;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
++
++/* loaded from: classes.dex */
++public final class OplusCameraManager implements IOplusCameraManager {
++    private static final String PERMISSION_SAFE_CAMERA = "com.oplus.permission.safe.CAMERA";
++    private static final String PERMISSION_SATELLITE_COMMUNICATION = "com.oplus.permission.safe.SATELLITE_COMMUNICATION";
++    public static final int READ_CAMERA_SERVER_MEMORY_INFO = 1;
++    public static final int READ_HAL_MEMORY_INFO = 0;
++    public static final int STATELLITE_CALL_STATUS_CALLING = 1;
++    public static final int STATELLITE_CALL_STATUS_IDLE = 0;
++    private static final String TAG = "OplusCameraManager";
++    private static final String SYSTEM_CAMERA_PACKNAME = SystemProperties.get("ro.oplus.system.camera.name");
++    private static final CaptureRequest.Key<byte[]> KEY_OPLUS_PACKAGE = new CaptureRequest.Key<>("com.oplus.is.sdk.camera.package", byte[].class);
++    private static OplusCameraManager mInstance = new OplusCameraManager();
++    private static String[] SET_PACKAGE_BLACK_LIST = {"com.oplus.battery", "com.oplus.onetrace", "com.android.systemui", "com.oplus.obrain"};
++    private String mOpPackageName = "";
++    private boolean mIsCameraUnitSession = false;
++    private boolean mbLoad = false;
++
++    public native int nativeSendToAttachHWBufToBufQEvent(long j);
++
++    public native int nativeSendToBufQAllocEnableEvent(long j);
++
++    public native int nativeSendToExchgHWBufBtwBufQEvent(long j);
++
++    public native void nativtSendToProcessHeif(long j);
++
++    private OplusCameraManager() {
++    }
++
++    private void checkLoadLibrary() {
++        Log.i(TAG, "checkLoadHeifLibbrary, mbLoad: " + this.mbLoad);
++        if (this.mbLoad) {
++            return;
++        }
++        try {
++            System.loadLibrary("HeifWinBufExchg-jni");
++            this.mbLoad = true;
++        } catch (Exception e) {
++            e.printStackTrace();
++            Log.e(TAG, "checkLoadHeifLibbrary, error");
++        }
++    }
++
++    public void sendToProcessHeif(long ptr) {
++        checkLoadLibrary();
++        nativtSendToProcessHeif(ptr);
++    }
++
++    public int sendToBufQAllocEnableEvent(long ptr) {
++        checkLoadLibrary();
++        return nativeSendToBufQAllocEnableEvent(ptr);
++    }
++
++    public int sendToExchgHWBufBtwBufQEvent(long ptr) {
++        checkLoadLibrary();
++        return nativeSendToExchgHWBufBtwBufQEvent(ptr);
++    }
++
++    public int sendToAttachHWBufToBufQEvent(long ptr) {
++        checkLoadLibrary();
++        return nativeSendToAttachHWBufToBufQEvent(ptr);
++    }
++
++    public static synchronized OplusCameraManager getInstance() {
++        OplusCameraManager oplusCameraManager;
++        synchronized (OplusCameraManager.class) {
++            oplusCameraManager = mInstance;
++        }
++        return oplusCameraManager;
++    }
++
++    public static Object getEmptyCameraMetadataNative(long[] metadataPtr) {
++        CameraMetadataNative meta = new CameraMetadataNative();
++        if (metadataPtr != null && metadataPtr.length > 0) {
++            metadataPtr[0] = meta.getMetadataPtr();
++        }
++        return meta;
++    }
++
++    public static TotalCaptureResult generateTotalCaptureResult(Object meta, long frameId) {
++        if (meta == null || !(meta instanceof CameraMetadataNative)) {
++            return null;
++        }
++        TotalCaptureResult r = new TotalCaptureResult((CameraMetadataNative) meta, 0);
++        try {
++            Field numField = CaptureResult.class.getDeclaredField("mFrameNumber");
++            numField.setAccessible(true);
++            numField.setLong(r, frameId);
++        } catch (IllegalAccessException | NoSuchFieldException e) {
++            e.printStackTrace();
++        }
++        return r;
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void addAuthResultInfo(Context context, int uid, int pid, int permBits, String packageName) {
++        context.enforceCallingOrSelfPermission(PERMISSION_SAFE_CAMERA, TAG);
++        if (uid == 0) {
++            throw new IllegalArgumentException("uid was 0, which is illegal.");
++        }
++        if (pid == 0) {
++            throw new IllegalArgumentException("pid was 0, which is illegal.");
++        }
++        if (packageName == null) {
++            throw new IllegalArgumentException("packageName was null, which is illegal.");
++        }
++        try {
++            OplusCameraManagerGlobal.get().addAuthResultInfo(uid, pid, permBits, packageName);
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void setDeathRecipient(IBinder client) {
++        if (client == null) {
++            throw new IllegalArgumentException("client was null");
++        }
++        try {
++            OplusCameraManagerGlobal.get().setDeathRecipient(client);
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public boolean isAuthedClient(Context context) {
++        if (context == null) {
++            throw new IllegalArgumentException("context was null");
++        }
++        try {
++            return OplusCameraManagerGlobal.get().isAuthedClient(context.getOpPackageName());
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++            return false;
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++            return false;
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void preOpenCamera(Context context) {
++        if (context == null) {
++            throw new IllegalArgumentException("context was null");
++        }
++        context.enforceCallingOrSelfPermission(PERMISSION_SAFE_CAMERA, TAG);
++        try {
++            OplusCameraManagerGlobal.get().preOpenCamera(context.getOpPackageName());
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void sendOplusExtCamCmd(Context context, IOplusCameraManager.Cmd cmd, int[] param) {
++        if (context == null) {
++            throw new IllegalArgumentException("context was null");
++        }
++        context.enforceCallingOrSelfPermission(PERMISSION_SAFE_CAMERA, TAG);
++        try {
++            OplusCameraManagerGlobal.get().sendOplusExtCamCmd(context.getOpPackageName(), cmd, param);
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    public void readMemoryInfo(IOplusCameraManager.Cmd cmd, StringBuilder result, int model) {
++        try {
++            OplusCameraManagerGlobal.get().readMemoryInfo(cmd, result, model);
++        } catch (CameraAccessException e) {
++            Log.e(TAG, "readOplusMemory, CameraAccessException: " + e);
++        } catch (RemoteException e2) {
++            Log.e(TAG, "readOplusMemory, RemoteException: " + e2);
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void setCallInfo() {
++        try {
++            OplusCameraManagerGlobal.get().setCallInfo();
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void saveOpPackageName(String packageName) {
++        this.mOpPackageName = packageName;
++        Log.i(TAG, "saveOpPackageName, mOpPackageName: " + this.mOpPackageName);
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void setPackageName() {
++        for (String packageName : SET_PACKAGE_BLACK_LIST) {
++            if (packageName.equals(this.mOpPackageName)) {
++                return;
++            }
++        }
++        try {
++            OplusCameraManagerGlobal.get().setClientInfo(this.mOpPackageName, Binder.getCallingUid(), Binder.getCallingPid());
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    public void setRIOClientInfo() throws CameraAccessException {
++        Log.i(TAG, "uid = " + Binder.getCallingUid() + ", pid = " + Binder.getCallingPid());
++        try {
++            OplusCameraManagerGlobal.get().setRIOClientInfo(Binder.getCallingUid(), Binder.getCallingPid());
++        } catch (RemoteException e) {
++            e.printStackTrace();
++        }
++    }
++
++    public void unRegisterCameraDeviceCallback(Context context) throws CameraAccessException {
++        if (context == null) {
++            throw new IllegalArgumentException("context was null");
++        }
++        Log.i(TAG, "unRegisterCameraDeviceCallback, packageName = " + context.getOpPackageName());
++        try {
++            OplusCameraManagerGlobal.get().unRegisterCameraDeviceCallback(context.getOpPackageName());
++        } catch (RemoteException e) {
++            e.printStackTrace();
++        }
++    }
++
++    public void setDeathRecipient(Context context, IBinder client) {
++        if (context == null) {
++            throw new IllegalArgumentException("context was null");
++        }
++        if (client == null) {
++            throw new IllegalArgumentException("client was null");
++        }
++        try {
++            OplusCameraManagerGlobal.get().setDeathRecipient(context.getOpPackageName(), client);
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    public void setSatelliteCallStatus(Context context, int status) throws CameraAccessException {
++        if (context == null) {
++            throw new IllegalArgumentException("context was null");
++        }
++        try {
++            OplusCameraManagerGlobal.get().setSatelliteCallStatus(context.getOpPackageName(), status);
++        } catch (RemoteException e) {
++            e.printStackTrace();
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public boolean isPrivilegedApp(String packageName) {
++        String str;
++        if (packageName == null || (str = SYSTEM_CAMERA_PACKNAME) == null || !str.equals(packageName)) {
++            return false;
++        }
++        return true;
++    }
++
++    public void setTorchIntensity(int torchIntensity) {
++        if (torchIntensity < 0) {
++            throw new IllegalArgumentException("torchIntensity was less than 0, which is illegal.");
++        }
++        try {
++            OplusCameraManagerGlobal.get().setTorchIntensity(torchIntensity);
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    public void disconnectClients() {
++        try {
++            OplusCameraManagerGlobal.get().disconnectClients();
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    public boolean isClientConnected() {
++        try {
++            return OplusCameraManagerGlobal.get().isClientConnected();
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++            return false;
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++            return false;
++        }
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public boolean isCameraUnitSession() {
++        return this.mIsCameraUnitSession;
++    }
++
++    @Override // android.hardware.camera2.IOplusCameraManager
++    public void parseSessionParameters(CaptureRequest sessionParams) {
++        if (sessionParams == null) {
++            setIsCameraUnitSession(false);
++            return;
++        }
++        byte[] result = (byte[]) sessionParams.get(KEY_OPLUS_PACKAGE);
++        if (result == null || result.length == 0) {
++            setIsCameraUnitSession(false);
++            return;
++        }
++        if (1 == result[0]) {
++            setIsCameraUnitSession(true);
++        }
++        Log.i(TAG, "parseSessionParameters mIsCameraUnitSession: " + this.mIsCameraUnitSession);
++    }
++
++    public void oplusDetachImage(Image image, ImageReader imgreader) {
++        try {
++            Method method = ImageReader.class.getDeclaredMethod("detachImage", Image.class);
++            method.setAccessible(true);
++            method.invoke(imgreader, image);
++        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
++            e.printStackTrace();
++        }
++        Log.i(TAG, "using reflection to visit detachImage method in ImageReader");
++    }
++
++    public static void setOmojiJson(String jsonInfo) {
++        Log.i(TAG, "setOmojiJson called.");
++        if (jsonInfo == null || "".equals(jsonInfo)) {
++            Log.i(TAG, "jsonInfo is null");
++            return;
++        }
++        try {
++            OplusCameraManagerGlobal.get().setOmojiJson(jsonInfo);
++        } catch (CameraAccessException e) {
++            Log.i(TAG, "setOmojiJson :" + e.getMessage());
++        } catch (RemoteException e2) {
++            Log.i(TAG, "setOmojiJson :" + e2.getMessage());
++        }
++    }
++
++    public void closeAON() throws CameraAccessException {
++        Log.i(TAG, "uid = " + Binder.getCallingUid() + ", pid = " + Binder.getCallingPid());
++        try {
++            OplusCameraManagerGlobal.get().closeAON();
++        } catch (RemoteException e) {
++            e.printStackTrace();
++        }
++    }
++
++    private void setIsCameraUnitSession(boolean isCameraUnitSession) {
++        this.mIsCameraUnitSession = isCameraUnitSession;
++        try {
++            OplusCameraManagerGlobal.get().setIsCameraUnitSession(this.mIsCameraUnitSession);
++        } catch (CameraAccessException e) {
++            e.printStackTrace();
++        } catch (RemoteException e2) {
++            e2.printStackTrace();
++        }
++    }
++
++    /* JADX INFO: Access modifiers changed from: private */
++    /* loaded from: classes.dex */
++    public static final class OplusCameraManagerGlobal implements IBinder.DeathRecipient {
++        private static final int ADD_AUTH_RESULT = 10001;
++        private static final String CAMERA_SERVICE_BINDER_NAME = "media.camera";
++        private static final int CLIENT_IS_AUTHED = 10004;
++        private static final int CLOSE_AON = 10013;
++        private static final int CONNECT_STATUS = 10011;
++        private static final String DESCRIPTOR = "android.hardware.camera";
++        private static final int DISCONNECT_CLIENTS = 10009;
++        private static final int OPEN_AON = 10012;
++        private static final int OPLUS_CAMERA_FIRST_CALL_TRANSACTION = 10000;
++        private static final int PRE_OPEN_CAMERA = 10014;
++        private static final int READ_OPLUS_CAMERA_SERVER_MEMORY = 10018;
++        private static final int READ_OPLUS_HAL_MEMORY = 10017;
++        private static final int REGISTER_CAMERA_DEVICE_CALLBACK = 10019;
++        private static final int SEND_OPLUS_EXT_CAM_CMD = 10015;
++        private static final int SET_CALL_INFO = 10006;
++        private static final int SET_CLIENT_INFO = 10005;
++        private static final int SET_DEATH_RECIPIENT = 10002;
++        private static final int SET_DEATH_RECIPIENT_FOR_NAME = 10022;
++        private static final int SET_IS_CAMERA_UNIT_SESSION = 10016;
++        private static final int SET_OMOJI_JSON = 10010;
++        private static final int SET_PACKAGE_NAME = 10003;
++        private static final int SET_RIO_CLIENT_INFO = 10007;
++        private static final int SET_SATELLITE_CALL_STATE = 10021;
++        private static final int SET_TORCH_INTENSITY = 10008;
++        private static final String TAG = "OplusCameraManagerGlobal";
++        private static final int UNREGISTER_CAMERA_DEVICE_CALLBACK = 10020;
++        private static final OplusCameraManagerGlobal gCameraManager = new OplusCameraManagerGlobal();
++        public static final boolean sCameraServiceDisabled = SystemProperties.getBoolean("config.disable_cameraservice", false);
++        private final boolean DEBUG = false;
++        private final Object mLock = new Object();
++        private IBinder mRemote = null;
++
++        private OplusCameraManagerGlobal() {
++        }
++
++        public static OplusCameraManagerGlobal get() {
++            return gCameraManager;
++        }
++
++        private void connectCameraServiceLocked() {
++            if (this.mRemote != null || sCameraServiceDisabled) {
++                return;
++            }
++            Log.i(TAG, "Connecting to camera service");
++            IBinder service = ServiceManager.getService(CAMERA_SERVICE_BINDER_NAME);
++            this.mRemote = service;
++            if (service == null) {
++                return;
++            }
++            try {
++                service.linkToDeath(this, 0);
++            } catch (RemoteException e) {
++            }
++        }
++
++        public IBinder getCameraServiceRemote() {
++            IBinder iBinder;
++            synchronized (this.mLock) {
++                connectCameraServiceLocked();
++                if (this.mRemote == null && !sCameraServiceDisabled) {
++                    Log.e(TAG, "Camera service is unavailable");
++                }
++                iBinder = this.mRemote;
++            }
++            return iBinder;
++        }
++
++        public void addAuthResultInfo(int uid, int pid, int permBits, String packageName) throws CameraAccessException, RemoteException {
++            Log.e(TAG, "addAuthResultInfo");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeInt(uid);
++                data.writeInt(pid);
++                data.writeInt(permBits);
++                data.writeString(packageName);
++                this.mRemote.transact(10001, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setDeathRecipient(IBinder client) throws CameraAccessException, RemoteException {
++            Log.e(TAG, "setDeathRecipient");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeStrongBinder(client);
++                this.mRemote.transact(10002, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public boolean isAuthedClient(String packageName) throws CameraAccessException, RemoteException {
++            Log.e(TAG, "isAuthedClient, need check packageName: " + packageName);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(packageName);
++                this.mRemote.transact(10004, data, reply, 0);
++                reply.readException();
++                boolean isAuthed = reply.readBoolean();
++                data.recycle();
++                reply.recycle();
++                Log.e(TAG, "isAuthedClient, the " + packageName + " is Authed " + isAuthed);
++                return isAuthed;
++            } catch (Throwable th) {
++                data.recycle();
++                reply.recycle();
++                throw th;
++            }
++        }
++
++        public void preOpenCamera(String packageName) throws CameraAccessException, RemoteException {
++            Log.e(TAG, "preOpenCamera, need check packageName: " + packageName);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeInt(1);
++                this.mRemote.transact(10014, data, reply, 0);
++                reply.readException();
++                data.recycle();
++                reply.recycle();
++                Log.e(TAG, "preOpenCamera, the " + packageName + " preOpenSend ");
++            } catch (Throwable th) {
++                data.recycle();
++                reply.recycle();
++                throw th;
++            }
++        }
++
++        public void sendOplusExtCamCmd(String packageName, IOplusCameraManager.Cmd cmd, int[] param) throws CameraAccessException, RemoteException {
++            Log.e(TAG, "sendOplusExtCamCmd, packageName: " + packageName + ", cmd: " + cmd);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeInt(cmd.ordinal());
++                data.writeIntArray(param);
++                this.mRemote.transact(10015, data, reply, 1);
++                reply.readException();
++                data.recycle();
++                reply.recycle();
++                Log.e(TAG, "sendOplusExtCamCmd complete ");
++            } catch (Throwable th) {
++                data.recycle();
++                reply.recycle();
++                throw th;
++            }
++        }
++
++        public void readMemoryInfo(IOplusCameraManager.Cmd cmd, StringBuilder result, int model) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "readMemoryInfo, cmd: " + cmd);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInt(cmd.ordinal());
++                this.mRemote.transact(model == 0 ? 10017 : 10018, data, reply, 0);
++                byte[] byteArray = reply.createByteArray();
++                String res = new String(byteArray);
++                result.append(res);
++                data.recycle();
++                reply.recycle();
++                Log.i(TAG, "readMemoryInfo complete");
++            } catch (Throwable th) {
++                data.recycle();
++                reply.recycle();
++                throw th;
++            }
++        }
++
++        public void setCallInfo() throws CameraAccessException, RemoteException {
++            Log.e(TAG, "setCallInfo");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                this.mRemote.transact(10006, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setPackageName(String packageName) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "setPackageName");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(packageName);
++                remote.transact(10003, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setClientInfo(String packageName, int uid, int pid) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "setClientInfo, packageName: " + packageName + ", uid: " + uid + ", pid: " + pid);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(packageName);
++                data.writeInt(uid);
++                data.writeInt(pid);
++                remote.transact(10005, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setRIOClientInfo(int uid, int pid) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "uid: " + uid + ", pid: " + pid);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeInt(uid);
++                data.writeInt(pid);
++                remote.transact(10007, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void unRegisterCameraDeviceCallback(String packageName) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "unRegisterCameraDeviceCallback");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(packageName);
++                this.mRemote.transact(10020, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setDeathRecipient(String packageName, IBinder client) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "setDeathRecipient");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(packageName);
++                data.writeStrongBinder(client);
++                this.mRemote.transact(10022, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setSatelliteCallStatus(String packageName, int status) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "setSatelliteCallStatus, status: " + status);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(packageName);
++                data.writeInt(status);
++                remote.transact(10021, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setOmojiJson(String atavatarInfo) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "setOmojiJson E");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeString(atavatarInfo);
++                Log.i(TAG, "setOmojiJson process E");
++                this.mRemote.transact(10010, data, reply, 0);
++                Log.i(TAG, "setOmojiJson process X");
++                reply.readException();
++                data.recycle();
++                reply.recycle();
++                Log.i(TAG, "setOmojiJson X");
++            } catch (Throwable th) {
++                data.recycle();
++                reply.recycle();
++                throw th;
++            }
++        }
++
++        public void setTorchIntensity(int torchIntensity) throws CameraAccessException, RemoteException {
++            Log.d(TAG, "setTorchIntensity: " + torchIntensity);
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeInt(torchIntensity);
++                remote.transact(10008, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void disconnectClients() throws CameraAccessException, RemoteException {
++            Log.e(TAG, "disconnectClients");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                this.mRemote.transact(10009, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public boolean isClientConnected() throws CameraAccessException, RemoteException {
++            Log.e(TAG, "isClientConnected");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                this.mRemote.transact(10011, data, reply, 0);
++                reply.readException();
++                boolean isConnected = reply.readBoolean();
++                data.recycle();
++                reply.recycle();
++                Log.e(TAG, "isClientConnected: " + isConnected);
++                return isConnected;
++            } catch (Throwable th) {
++                data.recycle();
++                reply.recycle();
++                throw th;
++            }
++        }
++
++        public void closeAON() throws CameraAccessException, RemoteException {
++            Log.i(TAG, "closeAON E");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                remote.transact(10013, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        public void setIsCameraUnitSession(boolean isCameraUnitSession) throws CameraAccessException, RemoteException {
++            Log.i(TAG, "setIsCameraUnitSession E");
++            IBinder remote = getCameraServiceRemote();
++            if (remote == null) {
++                throw new CameraAccessException(2, "Camera service is currently unavailable");
++            }
++            Parcel data = Parcel.obtain();
++            Parcel reply = Parcel.obtain();
++            try {
++                data.writeInterfaceToken(DESCRIPTOR);
++                data.writeBoolean(isCameraUnitSession);
++                remote.transact(10016, data, reply, 0);
++                reply.readException();
++            } finally {
++                data.recycle();
++                reply.recycle();
++            }
++        }
++
++        @Override // android.os.IBinder.DeathRecipient
++        public void binderDied() {
++            this.mRemote = null;
++        }
++    }
++}
+diff --git a/oplus-fwk/src/android/os/OplusKeyEventManager.java b/oplus-fwk/src/android/os/OplusKeyEventManager.java
+new file mode 100644
+index 00000000..fe013a81
+--- /dev/null
++++ b/oplus-fwk/src/android/os/OplusKeyEventManager.java
+@@ -0,0 +1,10 @@
++package android.os;
++
++import android.view.KeyEvent;
++
++public class OplusKeyEventManager {
++
++    public interface OnKeyEventObserver {
++        void onKeyEvent(KeyEvent event); 
++    }
++}
+diff --git a/oplus-fwk/src/android/os/OplusManager.java b/oplus-fwk/src/android/os/OplusManager.java
+new file mode 100644
+index 00000000..49281dc5
+--- /dev/null
++++ b/oplus-fwk/src/android/os/OplusManager.java
+@@ -0,0 +1,8 @@
++package android.os;
++
++import java.util.Map;
++
++public class OplusManager {
++
++    public static void onStamp(String eventId, Map<String, String> logMap) {}
++}
+diff --git a/oplus-fwk/src/android/os/OplusSystemProperties.java b/oplus-fwk/src/android/os/OplusSystemProperties.java
+new file mode 100644
+index 00000000..f37593f4
+--- /dev/null
++++ b/oplus-fwk/src/android/os/OplusSystemProperties.java
+@@ -0,0 +1,20 @@
++package android.os;
++
++public class OplusSystemProperties {
++
++    public static String get(String key) {
++        return SystemProperties.get(key);
++    }
++
++    public static String get(String key, String def) {
++        return SystemProperties.get(key, def);
++    }
++
++    public static int getInt(String key, int def) {
++        return SystemProperties.getInt(key, def);
++    }
++
++    public static boolean getBoolean(String key, boolean def) {
++        return SystemProperties.getBoolean(key, def);
++    }
++}
+diff --git a/oplus-fwk/src/android/view/OplusWindowManager.java b/oplus-fwk/src/android/view/OplusWindowManager.java
+new file mode 100644
+index 00000000..d0873642
+--- /dev/null
++++ b/oplus-fwk/src/android/view/OplusWindowManager.java
+@@ -0,0 +1,8 @@
++package android.view;
++
++public class OplusWindowManager {
++
++    public OplusWindowManager() {}
++
++    public void requestKeyguard(String command) {}
++}
+diff --git a/oplus-fwk/src/android/view/animation/OplusBezierInterpolator.java b/oplus-fwk/src/android/view/animation/OplusBezierInterpolator.java
+new file mode 100644
+index 00000000..69d39e32
+--- /dev/null
++++ b/oplus-fwk/src/android/view/animation/OplusBezierInterpolator.java
+@@ -0,0 +1,31 @@
++package android.view.animation;
++
++public class OplusBezierInterpolator extends BaseInterpolator {
++
++    private static final float ABOVE_ZERO = 0.0001f;
++    private static final float BELOW_ONE = 0.9999f;
++
++    private static final double ABOVE_ONE = 1.0d;
++    private static final double EPSILON = 0.0000625d;
++
++    private OplusUnitBezier mOplusUnitBezier;
++
++    private boolean mLimit;
++
++    public OplusBezierInterpolator(double p1x, double p1y, double p2x, double p2y, boolean limit) {
++        mLimit = limit;
++        mOplusUnitBezier = new OplusUnitBezier(p1x, p1y, p2x, p2y);
++    }
++
++    @Override
++    public float getInterpolation(float input) {
++        double interpolation = mOplusUnitBezier.solve(input, EPSILON);
++        if (mLimit) {
++            final boolean above = input >= ABOVE_ZERO && input <= BELOW_ONE;
++            if (interpolation > ABOVE_ONE && !above) {
++                interpolation = ABOVE_ONE;
++            }
++        }
++        return (float) interpolation;
++    }
++}
+diff --git a/oplus-fwk/src/android/view/animation/OplusUnitBezier.java b/oplus-fwk/src/android/view/animation/OplusUnitBezier.java
+new file mode 100644
+index 00000000..a4bde919
+--- /dev/null
++++ b/oplus-fwk/src/android/view/animation/OplusUnitBezier.java
+@@ -0,0 +1,78 @@
++package android.view.animation;
++
++public class OplusUnitBezier {
++
++    private double ax;
++    private double ay;
++    private double bx;
++    private double by;
++    private double cx;
++    private double cy;
++
++    public OplusUnitBezier(double p1x, double p1y, double p2x, double p2y) {
++        final double d = p1x * 3.0d;
++        final double d2 = (p2x - p1x) * 3.0d - d;
++        final double d3 = p1y * 3.0d;
++        final double d4 = (p2y - p1y) * 3.0d - d3;
++
++        ax = (1.0d - d) - d2;
++        ay = (1.0d - d3) - d4;
++        bx = d2;
++        by = d4;
++        cx = d;
++        cy = d3;
++    }
++
++    public double sampleCurveX(double t) {
++        return ((ax * t + bx) * t + cx) * t;
++    }
++
++    public double sampleCurveY(double t) {
++        return ((ay * t + by) * t + cy) * t;
++    }
++
++    public double sampleCurveDerivativeX(double t) {
++        return (ax * 3.0d * t + bx * 2.0d) * t + cx;
++    }
++
++    public double solveCurveX(double x, double epsilon) {
++        double t = x;
++        for (int i = 0; i < 8; i++) {
++            double x2 = sampleCurveX(t) - x;
++            if (Math.abs(x2) < epsilon) {
++                return t;
++            }
++            double d2 = sampleCurveDerivativeX(t);
++            if (Math.abs(d2) < 0.000001d) {
++                break;
++            }
++            t -= x2 / d2;
++        }
++        double t0 = 0.0d;
++        double t1 = 1.0d;
++        double t2 = x;
++        if (t2 < 0.0d) {
++            return 0.0d;
++        }
++        if (t2 > 1.0d) {
++            return 1.0d;
++        }
++        while (t0 < t1) {
++            double x2 = sampleCurveX(t2);
++            if (Math.abs(x2 - x) < epsilon) {
++                return t2;
++            }
++            if (x > x2) {
++                t0 = t2;
++            } else {
++                t1 = t2;
++            }
++            t2 = (t1 - t0) * 0.5d + t0;
++        }
++        return t2;
++    }
++
++    public double solve(double x, double epsilon) {
++        return sampleCurveY(solveCurveX(x, epsilon));
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/app/OPlusAccessControlManager.java b/oplus-fwk/src/com/oplus/app/OPlusAccessControlManager.java
+new file mode 100644
+index 00000000..e167d5cf
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/app/OPlusAccessControlManager.java
+@@ -0,0 +1,25 @@
++package com.oplus.app;
++
++import android.os.UserHandle;
++
++public class OPlusAccessControlManager {
++    
++    private static OPlusAccessControlManager sOPlusAccessControlManager = null;
++
++    public static final int USER_CURRENT = UserHandle.myUserId();
++
++    public static OPlusAccessControlManager getInstance() {
++        if (sOPlusAccessControlManager == null) {
++            sOPlusAccessControlManager = new OPlusAccessControlManager();
++        }
++        return sOPlusAccessControlManager;
++    }
++
++    public boolean isEncryptPass(String packageName, int userId) {
++        return true;
++    }
++
++    public boolean isEncryptedPackage(String packageName, int userId) {
++        return true;
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/app/OplusAppEnterInfo.java b/oplus-fwk/src/com/oplus/app/OplusAppEnterInfo.java
+new file mode 100644
+index 00000000..b86bd9e8
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/app/OplusAppEnterInfo.java
+@@ -0,0 +1,6 @@
++package com.oplus.app;
++
++public class OplusAppEnterInfo {
++
++    public OplusAppEnterInfo() {}
++}
+diff --git a/oplus-fwk/src/com/oplus/app/OplusAppExitInfo.java b/oplus-fwk/src/com/oplus/app/OplusAppExitInfo.java
+new file mode 100644
+index 00000000..7517a98e
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/app/OplusAppExitInfo.java
+@@ -0,0 +1,6 @@
++package com.oplus.app;
++
++public class OplusAppExitInfo {
++
++    public OplusAppExitInfo() {}
++}
+diff --git a/oplus-fwk/src/com/oplus/app/OplusAppInfo.java b/oplus-fwk/src/com/oplus/app/OplusAppInfo.java
+new file mode 100644
+index 00000000..e5f63af6
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/app/OplusAppInfo.java
+@@ -0,0 +1,6 @@
++package com.oplus.app;
++
++public class OplusAppInfo {
++
++    public OplusAppInfo() {}
++}
+diff --git a/oplus-fwk/src/com/oplus/app/OplusAppSwitchConfig.java b/oplus-fwk/src/com/oplus/app/OplusAppSwitchConfig.java
+new file mode 100644
+index 00000000..c7b5da0b
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/app/OplusAppSwitchConfig.java
+@@ -0,0 +1,8 @@
++package com.oplus.app;
++
++import java.util.List;
++
++public class OplusAppSwitchConfig {
++
++    public void addAppConfig(int type, List<String> list) {}
++}
+diff --git a/oplus-fwk/src/com/oplus/app/OplusAppSwitchManager.java b/oplus-fwk/src/com/oplus/app/OplusAppSwitchManager.java
+new file mode 100644
+index 00000000..b120b85e
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/app/OplusAppSwitchManager.java
+@@ -0,0 +1,37 @@
++package com.oplus.app;
++
++import android.content.Context;
++
++public class OplusAppSwitchManager {
++
++    private static OplusAppSwitchManager sOplusAppSwitchManager = null;
++
++    public static int APP_SWITCH_VERSION = 1;
++
++    public static OplusAppSwitchManager getInstance() {
++        if (sOplusAppSwitchManager == null) {
++            sOplusAppSwitchManager = new OplusAppSwitchManager();
++        }
++        return sOplusAppSwitchManager;
++    }
++
++    public boolean registerAppSwitchObserver(Context context,
++            OnAppSwitchObserver observer, OplusAppSwitchConfig config) {
++        return true;
++    }
++
++    public boolean unregisterAppSwitchObserver(Context context, OnAppSwitchObserver observer) {
++        return true;
++    }
++
++    public interface OnAppSwitchObserver {
++
++        void onActivityEnter(OplusAppEnterInfo oplusAppEnterInfo);
++
++        void onActivityExit(OplusAppExitInfo oplusAppExitInfo);
++
++        void onAppEnter(OplusAppEnterInfo oplusAppEnterInfo);
++
++        void onAppExit(OplusAppExitInfo oplusAppExitInfo);
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/flexiblewindow/FlexibleTaskView.java b/oplus-fwk/src/com/oplus/flexiblewindow/FlexibleTaskView.java
+new file mode 100644
+index 00000000..d865f8bd
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/flexiblewindow/FlexibleTaskView.java
+@@ -0,0 +1,38 @@
++package com.oplus.flexiblewindow;
++
++import android.content.ComponentName;
++import android.content.Context;
++import android.graphics.Rect;
++import android.graphics.Region;
++import android.util.AttributeSet;
++import android.view.SurfaceView;
++
++public class FlexibleTaskView extends SurfaceView {
++
++    public FlexibleTaskView(Context context) {
++        this(context, null);
++    }
++
++    public FlexibleTaskView(Context context, AttributeSet attrs) {
++        this(context, attrs, 0);
++    }
++
++    public FlexibleTaskView(Context context, AttributeSet attrs, int defStyleAttr) {
++        this(context, attrs, defStyleAttr, 0);
++    }
++
++    public FlexibleTaskView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
++        super(context, attrs, defStyleAttr, defStyleRes, true);
++    }
++
++    public interface Listener {
++        default void onInitialized(boolean isStartSuccess) {}
++        default void onReleased() {}
++        default void onTaskCreated(int taskId, ComponentName name) {}
++        default void onTaskChanged(int taskId, ComponentName name, Rect rect) {}
++        default void onTaskVisbilityChanged(int taskId, boolean visible) {}
++        default void onTaskRemovalStarted(int taskId) {}
++        default void onBackPressedOnTaskRoot(int taskId) {}
++        default void updateTouchRegion(Region region) {}
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/orms/OplusResourceManager.java b/oplus-fwk/src/com/oplus/orms/OplusResourceManager.java
+new file mode 100644
+index 00000000..6c75b272
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/orms/OplusResourceManager.java
+@@ -0,0 +1,19 @@
++package com.oplus.orms;
++
++import com.oplus.orms.info.OrmsSaParam;
++
++public class OplusResourceManager {
++
++    private static OplusResourceManager sOplusResourceManager = null;
++
++    public static OplusResourceManager getInstance(Class clazz) {
++        if (sOplusResourceManager == null) {
++            sOplusResourceManager = new OplusResourceManager();
++        }
++        return sOplusResourceManager;
++    }
++
++    public long ormsSetSceneAction(OrmsSaParam ormsSaParam) {
++        return -1L;
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/orms/info/OrmsSaParam.java b/oplus-fwk/src/com/oplus/orms/info/OrmsSaParam.java
+new file mode 100644
+index 00000000..ade82968
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/orms/info/OrmsSaParam.java
+@@ -0,0 +1,8 @@
++package com.oplus.orms.info;
++
++public class OrmsSaParam {
++
++    public OrmsSaParam() {}
++
++    public OrmsSaParam(String scene, String action, int timeout) {}
++}
+diff --git a/oplus-fwk/src/com/oplus/os/OplusBuild.java b/oplus-fwk/src/com/oplus/os/OplusBuild.java
+new file mode 100644
+index 00000000..f0f86ea2
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/os/OplusBuild.java
+@@ -0,0 +1,18 @@
++package com.oplus.os;
++
++public class OplusBuild {
++
++    public static final int OplusOS_11_3 = 22;
++
++    public static int getOplusOSVERSION() {
++        return 23;
++    }
++
++    public static class VERSION {
++        public static final String RELEASE = "unknown";
++
++        public static final int SDK_VERSION = getOplusOSVERSION();
++        public static final int SDK_SUB_VERSION = 1;
++    }
++
++}
+diff --git a/oplus-fwk/src/com/oplus/os/OplusUsbEnvironment.java b/oplus-fwk/src/com/oplus/os/OplusUsbEnvironment.java
+new file mode 100644
+index 00000000..88dbb0e2
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/os/OplusUsbEnvironment.java
+@@ -0,0 +1,158 @@
++package com.oplus.os;
++
++import android.content.Context;
++import android.os.Environment;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.os.UserHandle;
++import android.os.storage.DiskInfo;
++import android.os.storage.IStorageManager;
++import android.os.storage.StorageManager;
++import android.os.storage.VolumeInfo;
++import android.util.Log;
++
++import java.io.File;
++import java.util.ArrayList;
++import java.util.List;
++
++public class OplusUsbEnvironment extends Environment {
++
++    private static final String TAG = "OplusUsbEnvironment";
++    private static final String DEFAULT_INTERNAL_PATH = "/storage/emulated/0";
++
++    private static IStorageManager sMountService = null;
++    private static Object sLock = new Object();
++    private static String sExternalSdDir = null;
++    private static String sInternalSdDir = DEFAULT_INTERNAL_PATH;
++    private static ArrayList<String> sOtgPathes = new ArrayList<>();
++
++    private static void update(Context context) {
++        if (sMountService == null) {
++            sMountService = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"));
++        }
++        getVolumes();
++    }
++
++    public static File getExternalSdDirectory(Context context) {
++        String path;
++        synchronized (sLock) {
++            update(context);
++            path = sExternalSdDir;
++        }
++        if (path == null) {
++            return null;
++        }
++        return new File(path);
++    }
++
++    public static String getExternalSdState(Context context) {
++        String path;
++        final StorageManager sm = context.getSystemService(StorageManager.class);
++        synchronized (sLock) {
++            update(context);
++            path = sExternalSdDir;
++        }
++        if (path == null || sm == null) {
++            return "unknown";
++        }
++        return sm.getVolumeState(path);
++    }
++
++
++    public static String getExternalPath(Context context) {
++        String path;
++        synchronized (sLock) {
++            update(context);
++            path = sExternalSdDir;
++        }
++        return path;
++    }
++
++    public static File getInternalSdDirectory(Context context) {
++        String path;
++        synchronized (sLock) {
++            update(context);
++            path = sInternalSdDir;
++        }
++        if (path == null) {
++            return null;
++        }
++        return new File(path);
++    }
++
++    public static String getInternalSdState(Context context) {
++        String path;
++        final StorageManager sm = context.getSystemService(StorageManager.class);
++        synchronized (sLock) {
++            update(context);
++            path = sInternalSdDir;
++        }
++        if (path == null || sm == null) {
++            return "unknown";
++        }
++        return sm.getVolumeState(path);
++    }
++
++
++    public static String getInternalPath(Context context) {
++        String path;
++        synchronized (sLock) {
++            update(context);
++            path = sInternalSdDir;
++        }
++        return path;
++    }
++
++    public static List<String> getOtgPath(Context context) {
++        synchronized (sLock) {
++            update(context);
++            if (sOtgPathes == null) {
++                return null;
++            }
++            return (ArrayList<String>) sOtgPathes.clone();
++        }
++    }
++
++    public static void getVolumes() {
++        if (sMountService == null) {
++            Log.e(TAG, "getVolumes: sMountService is null!!!");
++            return;
++        }
++        try {
++            final VolumeInfo[] vols = sMountService.getVolumes(0);
++            sExternalSdDir = null;
++            sOtgPathes.clear();
++            for (VolumeInfo vol : vols) {
++                final String path = vol.path;
++                if (vol.type == 2) {
++                    final int userId = UserHandle.myUserId();
++                    if (path != null) {
++                        sInternalSdDir = path.concat("/").concat(Integer.toString(userId));
++                    }
++                } else {
++                    final DiskInfo diskInfo = vol.getDisk();
++                    if (diskInfo != null) {
++                        if (diskInfo.isSd() && path != null) {
++                            sExternalSdDir = path;
++                        }
++                        if (diskInfo.isUsb() && path != null && !sOtgPathes.contains(path)) {
++                            sOtgPathes.add(path);
++                        }
++                    }
++                }
++            }
++        } catch (RemoteException e) {
++        }
++    }
++
++    public static boolean isVolumeMounted(Context context, String path) {
++        synchronized (sLock) {
++            update(context);
++        }
++        final StorageManager sm = context.getSystemService(StorageManager.class);
++        if (path == null || sm == null) {
++            return false;
++        }
++        return "mounted".equals(sm.getVolumeState(path));
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/os/WaveformEffect.java b/oplus-fwk/src/com/oplus/os/WaveformEffect.java
+new file mode 100644
+index 00000000..acebf4fa
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/os/WaveformEffect.java
+@@ -0,0 +1,114 @@
++/*
++ * Copyright (C) 2022 The Nameless-AOSP Project
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++package com.oplus.os;
++
++import android.os.Parcel;
++import android.os.Parcelable;
++import android.util.Slog;
++
++public class WaveformEffect implements Parcelable {
++
++    private static final String TAG = "WaveformEffect";
++
++    public static final Parcelable.Creator<WaveformEffect> CREATOR =
++            new Parcelable.Creator<WaveformEffect>() {
++        @Override
++        public WaveformEffect createFromParcel(Parcel in) {
++            return new WaveformEffect(in);
++        }
++
++        @Override
++        public WaveformEffect[] newArray(int size) {
++            return new WaveformEffect[size];
++        }
++    };
++
++    private int mEffectType;
++    private boolean mEffectLoop;
++    private boolean mStrengthSettingEnabled;
++
++    private WaveformEffect() {
++        mEffectType = -1;
++        mEffectLoop = false;
++        mStrengthSettingEnabled = false;
++    }
++
++    public int getEffectType() {
++        return mEffectType;
++    }
++
++    public boolean getEffectLoop() {
++        return mEffectLoop;
++    }
++
++    public boolean getStrengthSettingEnabled() {
++        return mStrengthSettingEnabled;
++    }
++
++    public static class Builder {
++        private int mEffectType;
++        private boolean mEffectLoop;
++        private boolean mStrengthSettingEnabled;
++
++        public Builder() {
++            mEffectType = -1;
++            mEffectLoop = false;
++            mStrengthSettingEnabled = false;
++        }
++
++        public Builder(WaveformEffect effect) {
++            mEffectType = -1;
++            mEffectLoop = false;
++            mStrengthSettingEnabled = false;
++        }
++
++        public WaveformEffect build() {
++            WaveformEffect effect = new WaveformEffect();
++            effect.mEffectType = mEffectType;
++            effect.mEffectLoop = mEffectLoop;
++            effect.mStrengthSettingEnabled = mStrengthSettingEnabled;
++            return effect;
++        }
++
++        public Builder setEffectType(int type) {
++            mEffectType = type;
++            return this;
++        }
++
++        public Builder setEffectLoop(boolean loop) {
++            mEffectLoop = loop;
++            return this;
++        }
++
++        public Builder setStrengthSettingEnabled(boolean enabled) {
++            mStrengthSettingEnabled = enabled;
++            return this;
++        }
++    }
++
++    @Override
++    public int describeContents() {
++        return 0;
++    }
++
++    @Override
++    public void writeToParcel(Parcel dest, int flags) {
++        dest.writeInt(mEffectType);
++        dest.writeBoolean(mEffectLoop);
++        dest.writeBoolean(mStrengthSettingEnabled);
++    }
++
++    private WaveformEffect(Parcel in) {
++        mEffectType = in.readInt();
++        mEffectLoop = in.readBoolean();
++        mStrengthSettingEnabled = in.readBoolean();
++    }
++
++    @Override
++    public String toString() {
++        return String.valueOf(mEffectType);
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/osense/OsenseResEventClient.java b/oplus-fwk/src/com/oplus/osense/OsenseResEventClient.java
+new file mode 100644
+index 00000000..dbcd8fb3
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/osense/OsenseResEventClient.java
+@@ -0,0 +1,13 @@
++package com.oplus.osense;
++
++public class OsenseResEventClient {
++
++    private static OsenseResEventClient sInstance;
++
++    public static OsenseResEventClient getInstance() {
++        if (sInstance == null) {
++            sInstance = new OsenseResEventClient();
++        }
++        return sInstance;
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/osense/eventinfo/IOsenseEventCallback.java b/oplus-fwk/src/com/oplus/osense/eventinfo/IOsenseEventCallback.java
+new file mode 100644
+index 00000000..fd406417
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/osense/eventinfo/IOsenseEventCallback.java
+@@ -0,0 +1,22 @@
++package com.oplus.osense.eventinfo;
++
++import android.os.Binder;
++import android.os.IBinder;
++import android.os.IInterface;
++
++public interface IOsenseEventCallback extends IInterface {
++
++    public static class Default implements IOsenseEventCallback {
++        @Override
++        public IBinder asBinder() {
++            return null;
++        }
++    }
++
++    public static abstract class Stub extends Binder implements IOsenseEventCallback {
++        @Override
++        public IBinder asBinder() {
++            return this;
++        }
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/osense/eventinfo/OsenseEventCallback.java b/oplus-fwk/src/com/oplus/osense/eventinfo/OsenseEventCallback.java
+new file mode 100644
+index 00000000..50e20723
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/osense/eventinfo/OsenseEventCallback.java
+@@ -0,0 +1,6 @@
++package com.oplus.osense.eventinfo;
++
++import com.oplus.osense.eventinfo.IOsenseEventCallback;
++
++public class OsenseEventCallback extends IOsenseEventCallback.Stub {
++}
+diff --git a/oplus-fwk/src/com/oplus/screenshot/OplusLongshotCustomController.java b/oplus-fwk/src/com/oplus/screenshot/OplusLongshotCustomController.java
+new file mode 100644
+index 00000000..c42eb2ee
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/screenshot/OplusLongshotCustomController.java
+@@ -0,0 +1,6 @@
++package com.oplus.screenshot;
++
++public class OplusLongshotCustomController {
++
++    public OplusLongshotCustomController(OplusLongshotViewBase view, String source) {}
++}
+diff --git a/oplus-fwk/src/com/oplus/screenshot/OplusLongshotViewBase.java b/oplus-fwk/src/com/oplus/screenshot/OplusLongshotViewBase.java
+new file mode 100644
+index 00000000..24c276c0
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/screenshot/OplusLongshotViewBase.java
+@@ -0,0 +1,20 @@
++package com.oplus.screenshot;
++
++import android.content.Context;
++
++public interface OplusLongshotViewBase {
++
++    boolean canLongScroll();
++
++    int computeLongScrollExtent();
++
++    int computeLongScrollOffset();
++
++    int computeLongScrollRange();
++
++    boolean findViewsLongshotInfo(OplusLongshowViewInfo oplusLongshowViewInfo);
++
++    Context getContext();
++
++    boolean isLongshotVisibleToUser();
++}
+diff --git a/oplus-fwk/src/com/oplus/screenshot/OplusLongshowViewInfo.java b/oplus-fwk/src/com/oplus/screenshot/OplusLongshowViewInfo.java
+new file mode 100644
+index 00000000..4c83c665
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/screenshot/OplusLongshowViewInfo.java
+@@ -0,0 +1,6 @@
++package com.oplus.screenshot;
++
++public class OplusLongshowViewInfo {
++
++    public OplusLongshowViewInfo() {}
++}
+diff --git a/oplus-fwk/src/com/oplus/uifirst/IOplusUIFirstManager.java b/oplus-fwk/src/com/oplus/uifirst/IOplusUIFirstManager.java
+index ca758bd5..8a2e627d 100644
+--- a/oplus-fwk/src/com/oplus/uifirst/IOplusUIFirstManager.java
++++ b/oplus-fwk/src/com/oplus/uifirst/IOplusUIFirstManager.java
+@@ -7,4 +7,6 @@ package com.oplus.uifirst;
+ 
+ public interface IOplusUIFirstManager {
+     default void setBinderThreadUxFlag(int pid, int flag) {}
++
++    default void setUxThreadValue(int pid, int flag, String tag) {}
+ }
+diff --git a/oplus-fwk/src/com/oplus/uifirst/OplusUIFirstManager.java b/oplus-fwk/src/com/oplus/uifirst/OplusUIFirstManager.java
+index ebec5c56..53789778 100644
+--- a/oplus-fwk/src/com/oplus/uifirst/OplusUIFirstManager.java
++++ b/oplus-fwk/src/com/oplus/uifirst/OplusUIFirstManager.java
+@@ -14,4 +14,8 @@ public class OplusUIFirstManager implements IOplusUIFirstManager {
+         }
+         return sInstance;
+     }
++
++    @Override
++    public void setUxThreadValue(int pid, int flag, String tag) {
++    }
+ }
+diff --git a/oplus-fwk/src/com/oplus/util/OplusChangeTextUtil.java b/oplus-fwk/src/com/oplus/util/OplusChangeTextUtil.java
+new file mode 100644
+index 00000000..fe8872ae
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/util/OplusChangeTextUtil.java
+@@ -0,0 +1,52 @@
++package com.oplus.util;
++
++public class OplusChangeTextUtil {
++
++    private static final String TAG = "OplusChangeTextUtil";
++
++    private static final float H1 = 0.9f;
++    private static final float H2 = 1.0f;
++    private static final float H3 = 1.1f;
++    private static final float H4 = 1.25f;
++    private static final float H5 = 1.45f;
++    private static final float H6 = 1.65f;
++
++    public static final int G1 = 1;
++    public static final int G2 = 2;
++    public static final int G3 = 3;
++    public static final int G4 = 4;
++    public static final int G5 = 5;
++    public static final int G6 = 6;
++
++    public static final float[] SCALE_LEVEL = {H1, H2, H3, H4, H5, H6};
++
++    public static float getSuitableFontSize(float textSize, float scale, int level) {
++        if (level < 2) {
++            return textSize;
++        }
++        if (level > SCALE_LEVEL.length) {
++            level = SCALE_LEVEL.length;
++        }
++        final float textSizeNoScale = textSize / scale;
++        switch (level) {
++            case G2:
++                if (scale < H3) {
++                    return H2 * textSizeNoScale;
++                }
++                return H3 * textSizeNoScale;
++            case G3:
++                if (scale < H3) {
++                    return H2 * textSizeNoScale;
++                }
++                if (scale < H5) {
++                    return H3 * textSizeNoScale;
++                }
++                return H4 * textSizeNoScale;
++            default:
++                if (scale > SCALE_LEVEL[level - 1]) {
++                    return SCALE_LEVEL[level - 1] * textSizeNoScale;
++                }
++                return textSizeNoScale * scale;
++        }
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/util/OplusNetworkUtil.java b/oplus-fwk/src/com/oplus/util/OplusNetworkUtil.java
+new file mode 100644
+index 00000000..cd2ef591
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/util/OplusNetworkUtil.java
+@@ -0,0 +1,40 @@
++package com.oplus.util;
++
++import android.content.Context;
++import android.content.Intent;
++import android.net.ConnectivityManager;
++import android.net.NetworkInfo;
++import android.net.Uri;
++
++public class OplusNetworkUtil {
++
++    private static final String DEFAULT_HTTP_URI = "http://connectivitycheck.gstatic.com/generate_204";
++
++    public static boolean isWifiConnected(Context context) {
++        final ConnectivityManager cm = context.getSystemService(ConnectivityManager.class);
++        if (cm != null) {
++            return cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState()
++                    == NetworkInfo.State.CONNECTED;
++        }
++        return false;
++    }
++
++    public static boolean isMobileDataConnected(Context context) {
++        final ConnectivityManager cm = context.getSystemService(ConnectivityManager.class);
++        if (cm != null) {
++            return cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState()
++                    == NetworkInfo.State.CONNECTED;
++        }
++        return false;
++    }
++
++    public static void onClickLoginBtn(Context context) {
++        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DEFAULT_HTTP_URI));
++        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
++        context.startActivity(intent);
++    }
++
++    public static int getErrorString(Context context, String url) {
++        return 1;
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/wrapper/os/PowerManager.java b/oplus-fwk/src/com/oplus/wrapper/os/PowerManager.java
+new file mode 100644
+index 00000000..20b682c5
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/wrapper/os/PowerManager.java
+@@ -0,0 +1,14 @@
++package com.oplus.wrapper.os;
++
++public class PowerManager {
++
++    private final android.os.PowerManager mPowerManager;
++
++    public PowerManager(android.os.PowerManager powerManager) {
++        mPowerManager = powerManager;
++    }
++
++    public int getMaximumScreenBrightnessSetting() {
++        return mPowerManager.getMaximumScreenBrightnessSetting();
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/wrapper/os/ServiceManager.java b/oplus-fwk/src/com/oplus/wrapper/os/ServiceManager.java
+new file mode 100644
+index 00000000..be895b06
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/wrapper/os/ServiceManager.java
+@@ -0,0 +1,18 @@
++package com.oplus.wrapper.os;
++
++import android.os.IBinder;
++
++public class ServiceManager {
++
++    public static IBinder checkService(String name) {
++        return android.os.ServiceManager.checkService(name);
++    }
++
++    public static IBinder getService(String name) {
++        return android.os.ServiceManager.getService(name);
++    }
++
++    public static void addService(String name, IBinder token) {
++        android.os.ServiceManager.addService(name, token);
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/wrapper/os/SystemProperties.java b/oplus-fwk/src/com/oplus/wrapper/os/SystemProperties.java
+new file mode 100644
+index 00000000..1235d65f
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/wrapper/os/SystemProperties.java
+@@ -0,0 +1,24 @@
++package com.oplus.wrapper.os;
++
++public class SystemProperties {
++
++    public static String get(String key) {
++        return android.os.SystemProperties.get(key, "");
++    }
++
++    public static String get(String key, String def) {
++        return android.os.SystemProperties.get(key, def);
++    }
++
++    public static int getInt(String key, int def) {
++        return android.os.SystemProperties.getInt(key, def);
++    }
++
++    public static boolean getBoolean(String key, boolean def) {
++        return android.os.SystemProperties.getBoolean(key, def);
++    }
++
++    public static void set(String key, String val) {
++        android.os.SystemProperties.set(key, val);
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/wrapper/view/IWindowManager.java b/oplus-fwk/src/com/oplus/wrapper/view/IWindowManager.java
+new file mode 100644
+index 00000000..9cbaa55d
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/wrapper/view/IWindowManager.java
+@@ -0,0 +1,86 @@
++package com.oplus.wrapper.view;
++
++import android.graphics.Point;
++import android.os.IBinder;
++import android.os.IInterface;
++import android.os.RemoteException;
++import android.view.IRotationWatcher;
++
++public interface IWindowManager {
++
++    int getDockedStackSide() throws RemoteException;
++    int getInitialDisplayDensity(int displayId) throws RemoteException;
++    boolean hasNavigationBar(int displayId) throws RemoteException;
++    int watchRotation(IRotationWatcher watcher, int displayId) throws RemoteException;
++    void removeRotationWatcher(IRotationWatcher watcher) throws RemoteException;
++    void setForcedDisplayDensityForUser(int displayId, int density, int userId) throws RemoteException;
++    int getBaseDisplayDensity(int displayId) throws RemoteException;
++    void getBaseDisplaySize(int displayId, Point size) throws RemoteException;
++
++    public static abstract class Stub implements IInterface, android.view.IWindowManager {
++
++        private final android.view.IWindowManager mIWindowManager;
++
++        public Stub(android.view.IWindowManager windowManager) {
++            mIWindowManager = windowManager;
++        }
++
++        public static IWindowManager asInterface(IBinder obj) {
++            return new Proxy(android.view.IWindowManager.Stub.asInterface(obj));
++        }
++
++        @Override
++        public IBinder asBinder() {
++            return mIWindowManager.asBinder();
++        }
++
++        public static class Proxy implements IWindowManager {
++
++            private final android.view.IWindowManager mIWindowManager;
++
++            Proxy(android.view.IWindowManager windowManager) {
++                mIWindowManager = windowManager;
++            }
++
++            @Override
++            public int getDockedStackSide() throws RemoteException {
++                return mIWindowManager.getDockedStackSide();
++            }
++
++            @Override
++            public int getInitialDisplayDensity(int displayId) throws RemoteException {
++                return mIWindowManager.getInitialDisplayDensity(displayId);
++            }
++
++            @Override
++            public boolean hasNavigationBar(int displayId) throws RemoteException {
++                return mIWindowManager.hasNavigationBar(displayId);
++            }
++
++            @Override
++            public int watchRotation(IRotationWatcher watcher, int displayId) throws RemoteException {
++                return mIWindowManager.watchRotation(watcher, displayId);
++            }
++
++            @Override
++            public void removeRotationWatcher(IRotationWatcher watcher) throws RemoteException {
++                mIWindowManager.removeRotationWatcher(watcher);
++            }
++
++            @Override
++            public void setForcedDisplayDensityForUser(int displayId, int density, int userId) throws RemoteException {
++                mIWindowManager.setForcedDisplayDensityForUser(displayId, density, userId);
++            }
++
++            @Override
++            public int getBaseDisplayDensity(int displayId) throws RemoteException {
++                return mIWindowManager.getBaseDisplayDensity(displayId);
++            }
++
++            @Override
++            public void getBaseDisplaySize(int displayId, Point size) throws RemoteException {
++                mIWindowManager.getBaseDisplaySize(displayId, size);
++            }
++        }
++    }
++}
+diff --git a/oplus-fwk/src/com/oplus/zoomwindow/IOplusZoomWindowObserver.aidl b/oplus-fwk/src/com/oplus/zoomwindow/IOplusZoomWindowObserver.aidl
+new file mode 100644
+index 00000000..57c3dcc7
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/zoomwindow/IOplusZoomWindowObserver.aidl
+@@ -0,0 +1,11 @@
++package com.oplus.zoomwindow;
++
++import com.oplus.zoomwindow.OplusZoomWindowInfo;
++
++interface IOplusZoomWindowObserver {
++
++    void onInputMethodChanged(boolean isShown);
++    void onZoomWindowDied(String appName);
++    void onZoomWindowHide(inout OplusZoomWindowInfo info);
++    void onZoomWindowShow(inout OplusZoomWindowInfo info);
++}
+diff --git a/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.aidl b/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.aidl
+new file mode 100644
+index 00000000..077f18db
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.aidl
+@@ -0,0 +1,3 @@
++package com.oplus.zoomwindow;
++
++parcelable OplusZoomWindowInfo;
+diff --git a/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.java b/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.java
+new file mode 100644
+index 00000000..682a8b63
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowInfo.java
+@@ -0,0 +1,37 @@
++package com.oplus.zoomwindow;
++
++import android.os.Parcel;
++import android.os.Parcelable;
++
++public class OplusZoomWindowInfo implements Parcelable {
++
++    public static final Parcelable.Creator<OplusZoomWindowInfo> CREATOR =
++            new Parcelable.Creator<OplusZoomWindowInfo>() {
++
++        @Override
++        public OplusZoomWindowInfo createFromParcel(Parcel source) {
++            return new OplusZoomWindowInfo(source);
++        }
++
++        @Override
++        public OplusZoomWindowInfo[] newArray(int size) {
++            return new OplusZoomWindowInfo[size];
++        }
++    };
++
++    public OplusZoomWindowInfo() {}
++
++    public OplusZoomWindowInfo(Parcel in) {}
++
++    public OplusZoomWindowInfo(OplusZoomWindowInfo in) {}
++
++    @Override
++    public int describeContents() {
++        return 0;
++    }
++
++    @Override
++    public void writeToParcel(Parcel dest, int flags) {}
++
++    public void readFromParcel(Parcel in) {}
++}
+diff --git a/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowManager.java b/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowManager.java
+new file mode 100644
+index 00000000..60752569
+--- /dev/null
++++ b/oplus-fwk/src/com/oplus/zoomwindow/OplusZoomWindowManager.java
+@@ -0,0 +1,21 @@
++package com.oplus.zoomwindow;
++
++public class OplusZoomWindowManager {
++
++    public static OplusZoomWindowManager sOplusZoomWindowManager = null;
++
++    public static OplusZoomWindowManager getInstance() {
++        if (sOplusZoomWindowManager == null) {
++            sOplusZoomWindowManager = new OplusZoomWindowManager();
++        }
++        return sOplusZoomWindowManager;
++    }
++
++    public boolean registerZoomWindowObserver(IOplusZoomWindowObserver observer) {
++        return false;
++    }
++
++    public boolean unregisterZoomWindowObserver(IOplusZoomWindowObserver observer) {
++        return false;
++    }
++}
+diff --git a/oplus-fwk/src/net/oneplus/odm/OpDeviceManagerInjector.java b/oplus-fwk/src/net/oneplus/odm/OpDeviceManagerInjector.java
+new file mode 100644
+index 00000000..b03a3a2e
+--- /dev/null
++++ b/oplus-fwk/src/net/oneplus/odm/OpDeviceManagerInjector.java
+@@ -0,0 +1,19 @@
++package net.oneplus.odm;
++
++import android.content.Context;
++
++import java.util.Map;
++
++public class OpDeviceManagerInjector {
++
++    private static OpDeviceManagerInjector sOpDeviceManagerInjector = null;
++
++    public void preserveAppData(Context a, String b, Map c, Map d) {}
++
++    public static OpDeviceManagerInjector getInstance() {
++        if (sOpDeviceManagerInjector == null) {
++            sOpDeviceManagerInjector = new OpDeviceManagerInjector();
++        }
++        return sOpDeviceManagerInjector;
++    }
++}
+diff --git a/oplus-fwk/src/oplus/content/res/OplusExtraConfiguration.java b/oplus-fwk/src/oplus/content/res/OplusExtraConfiguration.java
+new file mode 100644
+index 00000000..d9206c3b
+--- /dev/null
++++ b/oplus-fwk/src/oplus/content/res/OplusExtraConfiguration.java
+@@ -0,0 +1,6 @@
++package oplus.content.res;
++
++public class OplusExtraConfiguration {
++    
++    public OplusExtraConfiguration() {}
++}
+-- 
+2.53.0
+

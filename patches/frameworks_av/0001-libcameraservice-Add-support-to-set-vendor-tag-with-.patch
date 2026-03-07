@@ -1,0 +1,119 @@
+From c1dd2502e268a67412c5732cc67451fcd1a060fc Mon Sep 17 00:00:00 2001
+From: cjh1249131356 <cjh1249131356@gmail.com>
+Date: Fri, 22 Jul 2022 22:55:18 +0800
+Subject: [PATCH 1/2] libcameraservice: Add support to set vendor tag with
+ client package name
+
+* OEMs like OnePlus and Nothing detect camera package name to unlock features like 48mp.
+
+[PA Edit: Make this generic by defining the package
+ name rather than the OEM]
+
+Change-Id: Ic0b537820ef1874647911379bcf142f0768a7a76
+Co-Authored-By: Jake Weinstein <jake@aospa.co>
+Signed-off-by: cjh1249131356 <cjh1249131356@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ services/camera/libcameraservice/Android.bp   |  5 ++++-
+ .../camera/libcameraservice/CameraService.cpp |  8 +++++++
+ .../camera/libcameraservice/CameraService.h   |  2 ++
+ .../device3/Camera3Device.cpp                 | 21 +++++++++++++++++++
+ 4 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/services/camera/libcameraservice/Android.bp b/services/camera/libcameraservice/Android.bp
+index f9cbc0e6d8..f3777e9d76 100644
+--- a/services/camera/libcameraservice/Android.bp
++++ b/services/camera/libcameraservice/Android.bp
+@@ -241,7 +241,10 @@ cc_library {
+         "-Wextra",
+         "-Werror",
+         "-Wno-ignored-qualifiers",
+-    ],
++    ] + select(soong_config_variable("camera", "package_name"), {
++        any @ flag_val: ["-DCAMERA_PACKAGE_NAME=\"" + flag_val + "\""],
++        default: [],
++    }),
+ }
+ 
+ cc_library_static {
+diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
+index 988803b6ea..206d396630 100644
+--- a/services/camera/libcameraservice/CameraService.cpp
++++ b/services/camera/libcameraservice/CameraService.cpp
+@@ -186,6 +186,9 @@ constexpr int32_t kInvalidDeviceId = -1;
+ // Set to keep track of logged service error events.
+ static std::set<std::string> sServiceErrorEventSet;
+ 
++// Current camera package name
++static std::string sCurrPackageName;
++
+ CameraService::CameraService(
+         std::shared_ptr<CameraServiceProxyWrapper> cameraServiceProxyWrapper,
+         std::shared_ptr<AttributionAndPermissionUtils> attributionAndPermissionUtils) :
+@@ -1520,6 +1523,10 @@ Status CameraService::filterGetInfoErrorCode(status_t err) {
+     }
+ }
+ 
++std::string CameraService::getCurrPackageName() {
++    return sCurrPackageName;
++}
++
+ Status CameraService::makeClient(
+         const sp<CameraService>& cameraService, const sp<IInterface>& cameraCb,
+         const AttributionSourceState& clientAttribution, int callingPid, bool systemNativeClient,
+@@ -2542,6 +2549,7 @@ Status CameraService::connectHelper(const sp<CALLBACK>& cameraCb, const std::str
+     const std::string clientPackageName =
+             clientAttribution.packageName.value_or(kUnknownPackageName);
+ 
++    sCurrPackageName = clientPackageName;
+     {
+         // Acquire mServiceLock and prevent other clients from connecting
+         std::unique_ptr<AutoConditionLock> lock =
+diff --git a/services/camera/libcameraservice/CameraService.h b/services/camera/libcameraservice/CameraService.h
+index e2d2e5437d..fe64b7ce65 100644
+--- a/services/camera/libcameraservice/CameraService.h
++++ b/services/camera/libcameraservice/CameraService.h
+@@ -345,6 +345,8 @@ public:
+      */
+     bool isAutomotiveExteriorSystemCamera(const std::string& cameraId) const;
+ 
++    static std::string getCurrPackageName();
++
+     /////////////////////////////////////////////////////////////////////
+     // CameraClient functionality
+ 
+diff --git a/services/camera/libcameraservice/device3/Camera3Device.cpp b/services/camera/libcameraservice/device3/Camera3Device.cpp
+index 86efe37f9a..61295eee4b 100644
+--- a/services/camera/libcameraservice/device3/Camera3Device.cpp
++++ b/services/camera/libcameraservice/device3/Camera3Device.cpp
+@@ -2492,6 +2492,27 @@ status_t Camera3Device::configureStreamsLocked(int operatingMode,
+         return BAD_VALUE;
+     }
+ 
++#ifdef CAMERA_PACKAGE_NAME
++    sp<VendorTagDescriptor> vTags;
++    sp<VendorTagDescriptorCache> vCache = VendorTagDescriptorCache::getGlobalVendorTagCache();
++    if (vCache.get()) {
++        const camera_metadata_t *metaBuffer = sessionParams.getAndLock();
++        metadata_vendor_id_t vendorId = get_camera_metadata_vendor_id(metaBuffer);
++        sessionParams.unlock(metaBuffer);
++        vCache->getVendorTagDescriptor(vendorId, &vTags);
++        uint32_t tag;
++        if (CameraMetadata::getTagFromName(CAMERA_PACKAGE_NAME, vTags.get(), &tag)) {
++            ALOGE("%s: Unable to get %s tag", __FUNCTION__, CAMERA_PACKAGE_NAME);
++        } else {
++            std::string pkgName = CameraService::getCurrPackageName();
++            status_t res = const_cast<CameraMetadata&>(sessionParams).update(tag, String8(pkgName.c_str()));
++            if (res) {
++                ALOGE("%s: metadata update failed, res = %d", __FUNCTION__, res);
++            }
++        }
++    }
++#endif
++
+     bool isConstrainedHighSpeed =
+             CAMERA_STREAM_CONFIGURATION_CONSTRAINED_HIGH_SPEED_MODE == operatingMode;
+ 
+-- 
+2.53.0
+

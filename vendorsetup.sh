@@ -112,6 +112,50 @@ generate_changelog() {
     done
 }
 
+sync_repo() {
+    local local_path="$1"
+    local remote="$2"
+    local branch="${3:-lineage-23.2}"
+    local top="${ANDROID_BUILD_TOP:-$PWD}"
+
+    echo "==> Syncing ${local_path} (${branch})"
+    cd "${top}" || return 1
+
+    if [[ -d "${local_path}/.git" ]]; then
+        cd "${local_path}"
+        git fetch "${remote}" "${branch}"
+        git checkout -B "${branch}" FETCH_HEAD
+    else
+        mkdir -p "$(dirname "${local_path}")"
+        git clone -b "${branch}" "${remote}" "${local_path}"
+    fi
+
+    cd "${top}"
+}
+
+sync() {
+    local top="${ANDROID_BUILD_TOP:-$PWD}"
+    local lineage="https://github.com/LineageOS"
+    local pixelos="https://github.com/PixelOS-AOSP"
+
+    cd "${top}" || return 1
+
+    sync_repo hardware/xiaomi                "${lineage}/android_hardware_xiaomi"
+    sync_repo hardware/motorola              "${lineage}/android_hardware_motorola"
+    sync_repo hardware/oplus                 "${lineage}/android_hardware_oplus"
+    sync_repo hardware/sony/timekeep         "${lineage}/android_hardware_sony_timekeep"
+    sync_repo hardware/pixelworks/interfaces "${lineage}/android_hardware_pixelworks_interfaces"
+    sync_repo hardware/ayn                   "${lineage}/android_hardware_ayn"
+    sync_repo hardware/mediatek              "${lineage}/android_hardware_mediatek"
+    sync_repo device/mediatek/sepolicy_vndr  "${lineage}/android_device_mediatek_sepolicy_vndr"
+    sync_repo packages/apps/ParanoidSense    "${pixelos}/android_packages_apps_ParanoidSense"    "sixteen-qpr2"
+    sync_repo packages/apps/DolbyAtmos       "${pixelos}/android_packages_apps_DolbyAtmos"       "sixteen-qpr2"
+
+    apply_patches
+
+    echo "==> Sync complete."
+}
+
 apply_patches() {
     local top="${ANDROID_BUILD_TOP:-$PWD}"
     local patches_path="${top}/vendor/extra/patches"

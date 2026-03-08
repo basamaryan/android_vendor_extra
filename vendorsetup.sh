@@ -164,7 +164,7 @@ apply_patches() {
 
     cd "${top}" || return 1
 
-    #./vendor/lineage/build/tools/repopick.py -t md3e-flags
+    ./vendor/lineage/build/tools/repopick.py -p -t BP4A_asb_2026-03
 
     if [[ -d "${patches_path}" ]]; then
         for project_name in $(cd "${patches_path}"; echo */); do

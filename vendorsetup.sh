@@ -238,7 +238,15 @@ function release() {
 
     for device in "${devices[@]}"; do
 
-        unset UNSAFE_DISABLE_HIDDENAPI_FLAGS
+        case "${device}" in
+            martini)
+                export UNSAFE_DISABLE_HIDDENAPI_FLAGS=true
+                ;;
+            *)
+                unset UNSAFE_DISABLE_HIDDENAPI_FLAGS
+                ;;
+        esac
+
         if [[ "${use_vanilla}" == "false" ]]; then
             export WITH_GMS=true
             export GMS_MAKEFILE=gms.mk

@@ -23,6 +23,7 @@ get_device_name() {
         "kiev")    echo "Motorola moto g 5G / moto one 5G ace" ;;
         "davinci") echo "Xiaomi Redmi K20 / Mi 9T" ;;
         "Q25")     echo "Zinwa Q25" ;;
+        "odin2thor") echo "AYN Thor" ;;
         *)         echo "$1" ;; 
     esac
 }
@@ -147,7 +148,7 @@ sync() {
     sync_repo hardware/oplus                 "${lineage}/android_hardware_oplus"
     sync_repo hardware/sony/timekeep         "${lineage}/android_hardware_sony_timekeep"
     sync_repo hardware/pixelworks/interfaces "${lineage}/android_hardware_pixelworks_interfaces"
-    sync_repo hardware/ayn                   "${lineage}/android_hardware_ayn"
+    #sync_repo hardware/ayn                   "${lineage}/android_hardware_ayn"
     sync_repo hardware/mediatek              "${lineage}/android_hardware_mediatek"
     sync_repo device/mediatek/sepolicy_vndr  "${lineage}/android_device_mediatek_sepolicy_vndr"
     sync_repo packages/apps/ParanoidSense    "${pixelos}/android_packages_apps_ParanoidSense"    "sixteen-qpr2"

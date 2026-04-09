@@ -7,6 +7,10 @@
 # Face Unlock
 TARGET_FACE_UNLOCK_SUPPORTED ?= $(TARGET_SUPPORTS_64_BIT_APPS)
 
+ifeq ($(TARGET_PRODUCT),lineage_odin2thor)
+  TARGET_FACE_UNLOCK_SUPPORTED := false
+endif
+
 ifeq ($(TARGET_FACE_UNLOCK_SUPPORTED),true)
 PRODUCT_PACKAGES += \
     ParanoidSense

@@ -124,8 +124,9 @@ sync_repo() {
 
     if [[ -d "${local_path}/.git" ]]; then
         cd "${local_path}"
-        git fetch "${remote}" "${branch}"
-        git checkout -B "${branch}" FETCH_HEAD
+        git remote set-url origin "${remote}" 2>/dev/null || git remote add origin "${remote}"
+        git fetch origin "${branch}"
+        git checkout -B "${branch}" "origin/${branch}"
     else
         mkdir -p "$(dirname "${local_path}")"
         git clone -b "${branch}" "${remote}" "${local_path}"

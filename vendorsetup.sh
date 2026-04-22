@@ -165,7 +165,7 @@ apply_patches() {
 
     cd "${top}" || return 1
 
-    #./vendor/lineage/build/tools/repopick.py -p -t B_asb_2026-04
+    #./lineage/scripts/repopick/repopick.py -p -t B_asb_2026-04
 
     if [[ -d "${patches_path}" ]]; then
         for project_name in $(cd "${patches_path}"; echo */); do

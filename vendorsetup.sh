@@ -28,6 +28,12 @@ get_device_name() {
     esac
 }
 
+get_meta() {
+    local key="$1"
+    local metadata="$2"
+    grep -m1 "^${key}=" <<< "${metadata}" | cut -d= -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
 notify_chat() {
     local message="$1"
     if [[ -n "${TELEGRAM_TOKEN}" && -n "${TELEGRAM_CHAT}" ]]; then
@@ -314,7 +320,7 @@ function release() {
 
         [[ -f "${out}/${filename}.sha256sum" ]] || (cd "${out}" && sha256sum "${filename}" > "${filename}.sha256sum")
         
-        local id=$(awk '{print $1}' "${out}/${filename}.sha256sum")
+        local sha256=$(awk '{print $1}' "${out}/${filename}.sha256sum")
         local datetime=$(sed -n 's/^ro\.build\.date\.utc=//p' "${out}/system/build.prop"); datetime="${datetime:-$(date -u +%s)}"
         local security_patch=$(sed -n 's/^ro\.build\.version\.security_patch=//p' "${out}/system/build.prop")
         local date_pretty=$(date -u -d @${datetime} +%F)
@@ -326,15 +332,51 @@ function release() {
         local sf_direct_url="${sf_folder_url}/$(basename "${filename}")/download"
 
         if [[ "${skip_ota}" == "false" ]]; then
+            local metadata=$(unzip -p "${out}/${filename}" META-INF/com/android/metadata 2>/dev/null)
+            local os_patch_level=$(get_meta 'post-security-patch-level' "${metadata}")
+            local os_sdk_level=$(get_meta 'post-sdk-level' "${metadata}")
+            local ota_property_files=$(get_meta 'ota-property-files' "${metadata}")
+
+            if ! [[ "${os_sdk_level}" =~ ^[0-9]+$ ]]; then
+                echo "[ERROR] Failed to read post-sdk-level from ${filename} metadata. Skipping release for ${device}."
+                notify_chat "*(i)* \`${project_name}\` release for \`${device}\` *aborted* on ${HOSTNAME}: failed to read post-sdk-level from \`${filename}\` metadata."
+                continue
+            fi
+
+            if [[ -z "${ota_property_files}" ]]; then
+                echo "[WARN] ota-property-files missing from ${filename} metadata. Streaming updates will be unavailable."
+                notify_chat "*(i)* ota-property-files missing from \`${filename}\` metadata for \`${device}\`. Streaming updates will be unavailable."
+            fi
+
             local ota_entry=$(jq -n \
-                --arg datetime "${datetime}" \
+                --argjson datetime "${datetime}" \
                 --arg filename "${filename}" \
-                --arg id "${id}" \
-                --arg romtype "${romtype}" \
+                --arg os_patch_level "${os_patch_level}" \
+                --argjson os_sdk_level "${os_sdk_level}" \
+                --arg ota_property_files "${ota_property_files}" \
+                --arg sha256 "${sha256}" \
                 --argjson size "${size}" \
+                --arg romtype "${romtype}" \
                 --arg version "${lineage_ver}" \
                 --arg release_url "${sf_direct_url}" \
-                '{response:[{datetime:$datetime,filename:$filename,id:$id,romtype:$romtype,size:$size,url:$release_url,version:$version}]}')
+                '[
+                    {
+                        datetime: $datetime,
+                        files: [
+                            {
+                                filename: $filename,
+                                os_patch_level: $os_patch_level,
+                                os_sdk_level: $os_sdk_level,
+                                ota_property_files: $ota_property_files,
+                                sha256: $sha256,
+                                size: $size,
+                                url: $release_url
+                            } | with_entries(select(.value != ""))
+                        ],
+                        type: $romtype,
+                        version: $version
+                    }
+                ]')
 
             (
                 cd "${top}/ota" || exit 1
@@ -405,7 +447,7 @@ function release() {
 ⛭ [Additional files](${sf_folder_url})
 
 *SHA-256 checksum*
-\`${id}\`
+\`${sha256}\`
 
 #${device}"
 

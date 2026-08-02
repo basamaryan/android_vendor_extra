@@ -24,6 +24,7 @@ get_device_name() {
         "davinci") echo "Xiaomi Redmi K20 / Mi 9T" ;;
         "Q25")     echo "Zinwa Q25" ;;
         "odin2thor") echo "AYN Thor" ;;
+        "ingot")   echo "Solana Saga" ;;
         *)         echo "$1" ;; 
     esac
 }
